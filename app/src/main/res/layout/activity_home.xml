@@ -24,8 +24,8 @@
 
                 <ImageView
                     android:id="@+id/imageView"
-                    android:layout_width="221dp"
-                    android:layout_height="253dp"
+                    android:layout_width="172dp"
+                    android:layout_height="197dp"
                     android:layout_marginTop="150dp"
                     android:src="@drawable/wrangler"
                     android:visibility="visible"
@@ -80,6 +80,16 @@
                     android:text="1 3 5"
                     android:textColor="@android:color/white"
                     app:layout_constraintHorizontal_bias="0.52"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <include
+                    layout="@layout/fragment_vehicle_speed"
+                    android:layout_width="226dp"
+                    android:layout_height="109dp"
+                    android:layout_marginTop="60dp"
+                    app:layout_constraintHorizontal_bias="0.38"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
