@@ -6,11 +6,8 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.LayoutInflaterCompat;
 import android.util.Log;
 import android.view.View;
 import android.app.Activity;
@@ -18,16 +15,12 @@ import android.content.Intent;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.google.android.gms.location.LocationServices;
+import com.android.internal.util.Predicate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.mikepenz.iconics.context.IconicsContextWrapper;
-import com.mikepenz.iconics.context.IconicsLayoutInflater;
-import com.mikepenz.iconics.context.IconicsLayoutInflater2;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,13 +33,14 @@ import java.net.URL;
 import java.util.Date;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.TimeZone;
 
 public class HomeActivity extends Activity {
 
     private static final int REQUEST_LOCATION = 1;
 
-    // (10 mins * 60 sec/min * 1000 ms/sec) = 600000ms
+    // (10 min * 60 s/min * 1000 ms/s) = 600000ms
     private static final int WEATHER_UPDATE_INTERVAL_MS = 600000;
 
     // Google Map
@@ -84,6 +78,59 @@ public class HomeActivity extends Activity {
     @Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(IconicsContextWrapper.wrap(newBase));
+    }
+
+    private String getWeatherConditionsIcon(String condition, boolean isNight) {
+        HashMap<String, String> weatherIconMap = new HashMap<>();
+
+        if (isNight) {
+            weatherIconMap.put("chanceflurries", "{wic-day-snow-wind}");
+            weatherIconMap.put("chancerain", "{wic-night-alt-rain}");
+            weatherIconMap.put("chancesleet", "{wic-night-alt-rain-mix}");
+            weatherIconMap.put("chancesnow", "{wic-night-alt-snow-wind}");
+            weatherIconMap.put("chancetstorms", "{wic-storm-showers}");
+            weatherIconMap.put("mostlycloudy", "{wic-cloudy}");
+            weatherIconMap.put("mostlysunny", "{wic-night-alt-cloudy}");
+            weatherIconMap.put("partlycloudy", "{wic-cloud}");
+            weatherIconMap.put("partlysunny", "{wic-night-alt-cloudy}");
+            weatherIconMap.put("clear", "{wic-night-clear}");
+            weatherIconMap.put("cloudy", "{wic-cloudy}");
+            weatherIconMap.put("flurries", "{wic-snow-wind}");
+            weatherIconMap.put("fog", "{wic-fog}");
+            weatherIconMap.put("hazy", "{wic-cloudy-windy}");
+            weatherIconMap.put("sleet", "{wic-rain-mix}");
+            weatherIconMap.put("rain", "{wic-raindrops}");
+            weatherIconMap.put("snow", "{wic-snowflake-cold}");
+            weatherIconMap.put("sunny", "{wic-night-clear}");
+            weatherIconMap.put("tstorms", "{wic-thunderstorm}");
+        }
+        else {
+            weatherIconMap.put("chanceflurries", "{wic-day-snow-wind}");
+            weatherIconMap.put("chancerain", "{wic-day-rain}");
+            weatherIconMap.put("chancesleet", "{wic-day-sleet}");
+            weatherIconMap.put("chancesnow", "{wic-day-snow}");
+            weatherIconMap.put("chancetstorms", "{wic-day-storm-showers}");
+            weatherIconMap.put("mostlycloudy", "{wic-cloudy}");
+            weatherIconMap.put("mostlysunny", "{wic-day-sunny-overcast}");
+            weatherIconMap.put("partlycloudy", "{wic-cloud}");
+            weatherIconMap.put("partlysunny", "{wic-day-cloudy}");
+            weatherIconMap.put("clear", "{wic-day-sunny}");
+            weatherIconMap.put("cloudy", "{wic-cloudy}");
+            weatherIconMap.put("flurries", "{wic-snow-wind}");
+            weatherIconMap.put("fog", "{wic-fog}");
+            weatherIconMap.put("hazy", "{wic-cloudy-windy}");
+            weatherIconMap.put("sleet", "{wic-rain-mix}");
+            weatherIconMap.put("rain", "{wic-raindrops}");
+            weatherIconMap.put("snow", "{wic-snowflake-cold}");
+            weatherIconMap.put("sunny", "{wic-day-sunny}");
+            weatherIconMap.put("tstorms", "{wic-thunderstorm}");
+        }
+
+        if (weatherIconMap.get(condition) == null) {
+            return "{wic-na}";
+        }
+
+        return weatherIconMap.get(condition);
     }
 
     private void checkPermissions() {
@@ -171,6 +218,10 @@ public class HomeActivity extends Activity {
         );
     }
 
+    private HomeActivity getActivityInstance() {
+        return this;
+    }
+
     public class RetrieveWeatherTask extends AsyncTask<Void, Void, String> {
         protected void onPreExecute() {
             // do nothing, for now
@@ -178,7 +229,8 @@ public class HomeActivity extends Activity {
 
         protected String doInBackground(Void... urls) {
             try {
-                URL url = new URL("http://api.wunderground.com/api/175638bf5ad25874/conditions/q/PA/Pittsburgh.json");
+                String API_KEY = "175638bf5ad25874";
+                URL url = new URL("http://api.wunderground.com/api/" + API_KEY + "/conditions/q/PA/Pittsburgh.json");
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 try {
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
@@ -210,8 +262,9 @@ public class HomeActivity extends Activity {
             try {
                 JSONObject object = (JSONObject) new JSONTokener(response).nextValue();
                 int currentTemp_f = object.getJSONObject("current_observation").getInt("temp_f");
+                String currentConditions = object.getJSONObject("current_observation").getString("icon");
 
-                currentWeatherButton.setText(currentTemp_f + "°");
+                currentWeatherButton.setText(currentTemp_f + "° " + getWeatherConditionsIcon(currentConditions, false));
             } catch (JSONException e) {
                 // Appropriate error handling code
             }

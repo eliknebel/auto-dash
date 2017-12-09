@@ -105,7 +105,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="100dp"
-                    android:background="#383838"
+                    android:background="#585858"
                     android:orientation="horizontal">
 
                     <android.support.constraint.ConstraintLayout
@@ -237,25 +237,14 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/internalTempIconButton"
-                android:layout_width="50dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@android:color/transparent"
-                android:fontFamily="@font/open_sans_light"
-                android:text="{faw-thermometer-three-quarters}"
-                android:textAlignment="center"
-                android:textColor="#ffffff"
-                android:textSize="36sp" />
-
-            <Button
                 android:id="@+id/internalTempButton"
-                android:layout_width="60dp"
+                android:layout_width="100dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:fontFamily="@font/open_sans_light"
-                android:text="68°"
+                android:paddingLeft="20dp"
+                android:text="{faw-thermometer-three-quarters} 68°"
                 android:textAlignment="viewStart"
                 android:textColor="#ffffff"
                 android:textSize="36sp" />
@@ -340,27 +329,17 @@
 
             <Button
                 android:id="@+id/weatherButton"
-                android:layout_width="60dp"
+                android:layout_width="120dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:fontFamily="@font/open_sans_light"
-                android:text="--°"
+                android:paddingRight="10dp"
+                android:text="--° {wic-day-cloudy}"
                 android:textAlignment="textEnd"
                 android:textColor="#ffffff"
                 android:textSize="36sp" />
 
-            <Button
-                android:id="@+id/weatherIconButton"
-                android:layout_width="50dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@android:color/transparent"
-                android:fontFamily="@font/open_sans_light"
-                android:text="{wic-day-cloudy}"
-                android:textAlignment="center"
-                android:textColor="#ffffff"
-                android:textSize="36sp" />
         </LinearLayout>
 
     </LinearLayout>
