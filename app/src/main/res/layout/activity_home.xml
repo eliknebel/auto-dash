@@ -77,6 +77,16 @@
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintTop_toTopOf="@+id/view" />
+
+                <include
+                    layout="@layout/fragment_vehicle_info"
+                    android:layout_width="282dp"
+                    android:layout_height="96dp"
+                    android:layout_marginTop="16dp"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/imageView" />
+
             </android.support.constraint.ConstraintLayout>
 
 
@@ -95,53 +105,66 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/button2"
-                android:layout_width="100dp"
-                android:layout_height="80dp"
+                android:id="@+id/internalTempIconButton"
+                android:layout_width="50dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:fontFamily="@font/open_sans_light"
-                android:text="--°"
+                android:text="{faw-thermometer-three-quarters}"
+                android:textAlignment="center"
                 android:textColor="#ffffff"
                 android:textSize="36sp" />
 
             <Button
-                android:id="@+id/button11"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:id="@+id/internalTempButton"
+                android:layout_width="60dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
-                android:drawableTint="@android:color/white"
-                android:drawableTop="@drawable/ic_volume_off"
-                android:text="MUTE"
-                android:textColor="#ffffff" />
+                android:fontFamily="@font/open_sans_light"
+                android:text="68°"
+                android:textAlignment="viewStart"
+                android:textColor="#ffffff"
+                android:textSize="36sp" />
 
             <Button
-                android:id="@+id/button10"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:id="@+id/muteButton"
+                android:layout_width="70dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:drawableTint="@android:color/white"
-                android:drawableTop="@drawable/ic_video_camera"
-                android:text="BACKUP"
-                android:textColor="#ffffff" />
+                android:text="{faw-volume-off}&#10;MUTE"
+                android:textColor="#ffffff"
+                android:textSize="18sp" />
 
             <Button
-                android:id="@+id/button9"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:id="@+id/backupButton"
+                android:layout_width="70dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:drawableTint="@android:color/white"
-                android:drawableTop="@drawable/ic_microphone"
-                android:text="VOICE"
-                android:textColor="#ffffff" />
+                android:text="{faw-video-camera}&#10;BACKUP"
+                android:textColor="#ffffff"
+                android:textSize="18sp" />
+
+            <Button
+                android:id="@+id/voiceButton"
+                android:layout_width="70dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:drawableTint="@android:color/white"
+                android:text="{faw-microphone}&#10;VOICE"
+                android:textColor="#ffffff"
+                android:textSize="18sp" />
 
             <Button
                 android:id="@+id/clockButton"
                 android:layout_width="150dp"
-                android:layout_height="80dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:fontFamily="@font/open_sans_light"
@@ -150,47 +173,60 @@
                 android:textSize="36sp" />
 
             <Button
-                android:id="@+id/button7"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:id="@+id/webButton"
+                android:layout_width="70dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:drawableTint="@android:color/white"
-                android:drawableTop="@drawable/ic_globe"
-                android:text="WEB"
-                android:textColor="#ffffff" />
+                android:text="{faw-globe}&#10;WEB"
+                android:textColor="#ffffff"
+                android:textSize="18sp" />
 
             <Button
-                android:id="@+id/button6"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:id="@+id/appsButton"
+                android:layout_width="70dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:drawableTint="@android:color/white"
-                android:drawableTop="@drawable/ic_th"
                 android:onClick="showApps"
-                android:text="APPS"
-                android:textColor="#ffffff" />
+                android:text="{faw-th}&#10;APPS"
+                android:textColor="#ffffff"
+                android:textSize="18sp" />
 
             <Button
-                android:id="@+id/button5"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:id="@+id/settingsButton"
+                android:layout_width="70dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:drawableTint="@android:color/white"
-                android:drawableTop="@drawable/ic_wrench"
-                android:text="SETTINGS"
-                android:textColor="#ffffff" />
+                android:text="{faw-wrench}&#10;SETTINGS"
+                android:textColor="#ffffff"
+                android:textSize="18sp" />
 
             <Button
-                android:id="@+id/currentWeather"
-                android:layout_width="100dp"
-                android:layout_height="80dp"
+                android:id="@+id/weatherButton"
+                android:layout_width="60dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:fontFamily="@font/open_sans_light"
                 android:text="--°"
+                android:textAlignment="textEnd"
+                android:textColor="#ffffff"
+                android:textSize="36sp" />
+
+            <Button
+                android:id="@+id/weatherIconButton"
+                android:layout_width="50dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:fontFamily="@font/open_sans_light"
+                android:text="{wic-day-cloudy}"
+                android:textAlignment="center"
                 android:textColor="#ffffff"
                 android:textSize="36sp" />
         </LinearLayout>

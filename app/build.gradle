@@ -29,4 +29,13 @@ dependencies {
 
     compile 'com.google.android.gms:play-services-maps:8.4.0'
     compile 'com.google.android.gms:play-services-location:8.4.0'
+
+    //the core iconcis library (without any widgets)
+    implementation "com.mikepenz:iconics-core:3.0.0@aar"
+
+    //this adds all ui view widgets (IconicsButton, IconicsImageView, ...)
+    implementation "com.mikepenz:iconics-views:3.0.0@aar"
+
+    implementation 'com.mikepenz:fontawesome-typeface:4.7.0.2@aar'
+    implementation 'com.mikepenz:weather-icons-typeface:2.0.10.4@aar'
 }

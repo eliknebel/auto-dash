@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.LayoutInflaterCompat;
 import android.util.Log;
 import android.view.View;
 import android.app.Activity;
@@ -24,6 +25,9 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.mikepenz.iconics.context.IconicsContextWrapper;
+import com.mikepenz.iconics.context.IconicsLayoutInflater;
+import com.mikepenz.iconics.context.IconicsLayoutInflater2;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -75,6 +79,11 @@ public class HomeActivity extends Activity {
             e.printStackTrace();
         }
 
+    }
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(IconicsContextWrapper.wrap(newBase));
     }
 
     private void checkPermissions() {
@@ -196,7 +205,7 @@ public class HomeActivity extends Activity {
                 response = "THERE WAS AN ERROR";
             }
 
-            Button currentWeatherButton = findViewById(R.id.currentWeather);
+            Button currentWeatherButton = findViewById(R.id.weatherButton);
 
             try {
                 JSONObject object = (JSONObject) new JSONTokener(response).nextValue();
