@@ -111,113 +111,120 @@
                     <android.support.constraint.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_weight="1">
+                        android:layout_weight="1"
+                        android:onClick="onMediaAlbumArtworkClick">
 
                         <ImageView
-                            android:id="@+id/imageView3"
+                            android:id="@+id/mediaAlbumArtworkImageView"
                             android:layout_width="80dp"
                             android:layout_height="80dp"
                             android:layout_marginLeft="16dp"
+                            android:background="#888"
                             android:scaleType="fitCenter"
-                            android:src="@drawable/albumart"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintLeft_toLeftOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
                         <TextView
-                            android:id="@+id/textView4"
+                            android:id="@+id/mediaTrackTextView"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
-                            android:text="We Sink"
+                            android:text="No Info"
                             android:textColor="#fff"
                             android:textStyle="bold"
-                            app:layout_constraintStart_toEndOf="@+id/imageView3"
-                            app:layout_constraintTop_toTopOf="@+id/imageView3" />
+                            app:layout_constraintStart_toEndOf="@+id/mediaAlbumArtworkImageView"
+                            app:layout_constraintTop_toTopOf="@+id/mediaAlbumArtworkImageView" />
 
                         <TextView
-                            android:id="@+id/textView5"
+                            android:id="@+id/mediaArtistTextView"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
-                            android:text="CHVRCHES"
+                            android:text="No Info"
                             android:textColor="#fff"
-                            app:layout_constraintStart_toEndOf="@+id/imageView3"
-                            app:layout_constraintTop_toBottomOf="@+id/textView4" />
+                            app:layout_constraintStart_toEndOf="@+id/mediaAlbumArtworkImageView"
+                            app:layout_constraintTop_toBottomOf="@+id/mediaTrackTextView" />
 
                         <TextView
-                            android:id="@+id/textView8"
+                            android:id="@+id/mediaAlbumTextView"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
-                            android:text="The Bones Of What You Believe"
+                            android:text="No Info"
                             android:textColor="#ccc"
-                            app:layout_constraintStart_toEndOf="@+id/imageView3"
-                            app:layout_constraintTop_toBottomOf="@+id/textView5" />
+                            app:layout_constraintStart_toEndOf="@+id/mediaAlbumArtworkImageView"
+                            app:layout_constraintTop_toBottomOf="@+id/mediaArtistTextView" />
 
                         <ProgressBar
-                            android:id="@+id/progressBar"
+                            android:id="@+id/mediaPositionProgressBar"
                             style="@style/Widget.AppCompat.ProgressBar.Horizontal"
                             android:layout_width="0dp"
                             android:layout_height="16dp"
                             android:layout_marginEnd="8dp"
                             android:layout_marginStart="8dp"
                             android:progress="75"
-                            app:layout_constraintBottom_toBottomOf="@+id/textView9"
-                            app:layout_constraintEnd_toStartOf="@+id/textView10"
+                            android:progressTint="@android:color/holo_orange_light"
+                            app:layout_constraintBottom_toBottomOf="@+id/mediaTrackPositionTextView"
+                            app:layout_constraintEnd_toStartOf="@+id/mediaTrackLengthTextView"
                             app:layout_constraintHorizontal_bias="1.0"
-                            app:layout_constraintStart_toEndOf="@+id/textView9" />
+                            app:layout_constraintStart_toEndOf="@+id/mediaTrackPositionTextView" />
 
                         <TextView
-                            android:id="@+id/textView9"
+                            android:id="@+id/mediaTrackPositionTextView"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:text="0:00"
                             android:textSize="12sp"
-                            app:layout_constraintBaseline_toBaselineOf="@+id/textView10"
-                            app:layout_constraintStart_toEndOf="@+id/imageView3" />
+                            app:layout_constraintBaseline_toBaselineOf="@+id/mediaTrackLengthTextView"
+                            app:layout_constraintStart_toEndOf="@+id/mediaAlbumArtworkImageView" />
 
                         <TextView
-                            android:id="@+id/textView10"
+                            android:id="@+id/mediaTrackLengthTextView"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="8dp"
                             android:text="2:46"
                             android:textSize="12sp"
-                            app:layout_constraintBottom_toBottomOf="@+id/imageView3"
+                            app:layout_constraintBottom_toBottomOf="@+id/mediaAlbumArtworkImageView"
                             app:layout_constraintEnd_toEndOf="parent" />
                     </android.support.constraint.ConstraintLayout>
 
                     <Button
-                        android:id="@+id/button5"
+                        android:id="@+id/mediaPreviousButton"
                         android:layout_width="70dp"
                         android:layout_height="match_parent"
                         android:background="@android:color/transparent"
+                        android:onClick="onMediaPreviousClick"
                         android:text="{faw-backward}"
                         android:textColor="#fff"
                         android:textSize="30sp" />
 
-                    <Button
-                        android:id="@+id/button4"
+                    <com.mikepenz.iconics.view.IconicsButton
+                        android:id="@+id/mediaPlayPauseButton"
+                        style="?android:attr/buttonStyle"
                         android:layout_width="70dp"
                         android:layout_height="match_parent"
                         android:background="@android:color/transparent"
+                        android:onClick="onPlayPauseClick"
                         android:text="{faw-pause}"
+                        android:textAllCaps="false"
                         android:textColor="#fff"
                         android:textSize="30sp" />
 
                     <Button
-                        android:id="@+id/button3"
+                        android:id="@+id/mediaNextButton"
                         android:layout_width="70dp"
                         android:layout_height="match_parent"
                         android:background="@android:color/transparent"
+                        android:onClick="onMediaNextClick"
                         android:text="{faw-forward}"
                         android:textColor="#fff"
                         android:textSize="30sp" />
 
                     <Button
-                        android:id="@+id/button2"
+                        android:id="@+id/mediaMenuButton"
                         android:layout_width="70dp"
                         android:layout_height="match_parent"
                         android:background="@android:color/transparent"
@@ -249,14 +256,16 @@
                 android:textColor="#ffffff"
                 android:textSize="36sp" />
 
-            <Button
+            <com.mikepenz.iconics.view.IconicsButton
                 android:id="@+id/muteButton"
+                style="?android:attr/buttonStyle"
                 android:layout_width="70dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:drawableTint="@android:color/white"
-                android:text="{faw-volume-off}&#10;MUTE"
+                android:onClick="onMuteButtonClick"
+                android:text="{faw-volume-up}&#10;MUTE"
                 android:textColor="#ffffff"
                 android:textSize="18sp" />
 
@@ -267,6 +276,7 @@
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:drawableTint="@android:color/white"
+                android:onClick="onBackupButtonClick"
                 android:text="{faw-video-camera}&#10;BACKUP"
                 android:textColor="#ffffff"
                 android:textSize="18sp" />
@@ -278,6 +288,7 @@
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:drawableTint="@android:color/white"
+                android:onClick="onVoiceButtonClick"
                 android:text="{faw-microphone}&#10;VOICE"
                 android:textColor="#ffffff"
                 android:textSize="18sp" />
@@ -289,6 +300,7 @@
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:fontFamily="@font/open_sans_light"
+                android:onClick="onClockButtonClick"
                 android:text="12:00 PM"
                 android:textColor="#ffffff"
                 android:textSize="36sp" />
@@ -300,6 +312,7 @@
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:drawableTint="@android:color/white"
+                android:onClick="onWebButtonClick"
                 android:text="{faw-globe}&#10;WEB"
                 android:textColor="#ffffff"
                 android:textSize="18sp" />
@@ -311,7 +324,7 @@
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:drawableTint="@android:color/white"
-                android:onClick="showApps"
+                android:onClick="onAppsButtonClick"
                 android:text="{faw-th}&#10;APPS"
                 android:textColor="#ffffff"
                 android:textSize="18sp" />
@@ -323,6 +336,7 @@
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:drawableTint="@android:color/white"
+                android:onClick="onSettingsButtonClick"
                 android:text="{faw-wrench}&#10;SETTINGS"
                 android:textColor="#ffffff"
                 android:textSize="18sp" />
@@ -334,6 +348,7 @@
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:fontFamily="@font/open_sans_light"
+                android:onClick="onWeatherButtonClick"
                 android:paddingRight="10dp"
                 android:text="--° {wic-day-cloudy}"
                 android:textAlignment="textEnd"
