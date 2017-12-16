@@ -5,8 +5,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.hardware.SensorEventListener;
 import android.location.Location;
@@ -20,19 +18,12 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.app.Activity;
 import android.content.Intent;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,8 +31,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.mikepenz.fontawesome_typeface_library.FontAwesome;
-import com.mikepenz.iconics.IconicsDrawable;
 import com.mikepenz.iconics.context.IconicsContextWrapper;
 import com.mikepenz.iconics.view.IconicsButton;
 
@@ -50,11 +39,9 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Calendar;
@@ -62,14 +49,13 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorManager;
 
-public class HomeActivity extends Activity implements SensorEventListener {
+public class HomeActivity extends Activity implements SensorEventListener,
+        MediaBarFragment.OnFragmentInteractionListener {
 
     private static final int REQUEST_LOCATION = 1;
 
@@ -85,17 +71,11 @@ public class HomeActivity extends Activity implements SensorEventListener {
     private Sensor accelerometerSensor;
     private Sensor magneticFieldSensor;
 
-    private MediaChangeReciever mediaChangeReciever = new MediaChangeReciever();
-
     private final float[] mAccelerometerReading = new float[3];
     private final float[] mMagnetometerReading = new float[3];
 
     private final float[] mRotationMatrix = new float[9];
     private final float[] mOrientationAngles = new float[3];
-
-    private int currentTrackPosition = 0;
-    private int currentTrackLength = 1;
-    private Timer mediaPositionUpdater;
 
     private boolean isMuting = false;
 
@@ -110,9 +90,6 @@ public class HomeActivity extends Activity implements SensorEventListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-//        requestWindowFeature(Window.FEATURE_NO_TITLE);
-//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         setContentView(R.layout.activity_home);
 
@@ -256,55 +233,9 @@ public class HomeActivity extends Activity implements SensorEventListener {
         );
     }
 
-    private void startMediaPositionUpdater() {
-        if (mediaPositionUpdater == null) {
-            new android.os.Handler().postDelayed(
-                new Runnable() {
-                    public void run() {
-                        mediaPositionUpdater = new Timer();
-                        mediaPositionUpdater.scheduleAtFixedRate(new TimerTask() {
-                            @Override
-                            public void run() {
-                                // Get a handler that can be used to post to the main thread
-                                Handler mainHandler = new Handler(Looper.getMainLooper());
-
-                                Runnable myRunnable = new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        currentTrackPosition += 1000;
-
-                                        ProgressBar mediaPositionProgressBar = findViewById(R.id.mediaPositionProgressBar);
-                                        TextView mediaTrackPositionTextView = findViewById(R.id.mediaTrackPositionTextView);
-
-                                        mediaPositionProgressBar.setProgress(currentTrackPosition);
-                                        mediaTrackPositionTextView.setText(String.format("%d", (currentTrackPosition / 60000))
-                                                + ":" + doubleDigitFormat(String.format("%d", ((currentTrackPosition / 1000) % 60))));
-                                    }
-                                };
-                                mainHandler.post(myRunnable);
-                            }
-                        }, 0, 1000);
-                    }
-                }, getMSUntilNextMediaProgressTick()
-            );
-        }
-    }
-
-    private void stopMediaPositionUpdater() {
-        if (mediaPositionUpdater != null) {
-            mediaPositionUpdater.cancel();
-            mediaPositionUpdater = null;
-        }
-    }
-
-    private long getMSUntilNextMediaProgressTick() {
-        Log.d("LOG", "getMSUntilNextMediaProgressTick " + (1000 - (currentTrackPosition % 1000)));
-        return (1000 - (currentTrackPosition % 1000));
-    }
-
-
-    private HomeActivity getActivityInstance() {
-        return this;
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+        // handle fragment interactions
     }
 
     public class RetrieveWeatherTask extends AsyncTask<Void, Void, String> {
@@ -357,187 +288,6 @@ public class HomeActivity extends Activity implements SensorEventListener {
         }
     }
 
-    public class RetrieveAlbumArtworkTask extends AsyncTask<String, Void, String> {
-
-        protected String doInBackground(String... urls) {
-
-            try {
-                URL url = new URL(urls[0]);
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                try {
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-                    StringBuilder stringBuilder = new StringBuilder();
-                    String line;
-                    while ((line = bufferedReader.readLine()) != null) {
-                        stringBuilder.append(line).append("\n");
-                    }
-                    bufferedReader.close();
-                    return stringBuilder.toString();
-                }
-                finally{
-                    urlConnection.disconnect();
-                }
-            }
-            catch(Exception e) {
-                Log.e("ERROR", e.getMessage(), e);
-                return null;
-            }
-        }
-
-        protected void onPostExecute(String response) {
-            if(response == null) {
-                Log.e("ERROR", "Album info response is null");
-                return;
-            }
-
-            try {
-                JSONObject object = (JSONObject) new JSONTokener(response).nextValue();
-                String albumArtUrl = object.getJSONObject("album")
-                        .getJSONArray("image")
-                        .getJSONObject(2)
-                        .getString("#text");
-
-                new DownloadAlbumArtworkTask().execute(albumArtUrl);
-
-            } catch (JSONException e) {
-                Log.e("ERROR", e.getMessage(), e);
-            }
-        }
-    }
-
-    private class DownloadAlbumArtworkTask extends AsyncTask<String, Void, Bitmap> {
-
-        protected Bitmap doInBackground(String... urls) {
-            String urldisplay = urls[0];
-            Bitmap mIcon11 = null;
-
-            try {
-                InputStream in = new java.net.URL(urldisplay).openStream();
-                mIcon11 = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error", e.getMessage());
-                e.printStackTrace();
-            }
-
-            return mIcon11;
-        }
-
-        protected void onPostExecute(Bitmap result) {
-            ImageView mediaAlbumArtworkImageView = findViewById(R.id.mediaAlbumArtworkImageView);
-
-            if (result == null) {
-                clearAlbumArtwork();
-                return;
-            }
-
-            mediaAlbumArtworkImageView.setImageBitmap(result);
-        }
-    }
-
-    public void clearAlbumArtwork() {
-        ImageView mediaAlbumArtworkImageView = findViewById(R.id.mediaAlbumArtworkImageView);
-
-        mediaAlbumArtworkImageView.setImageDrawable(
-            new IconicsDrawable(HomeActivity.this)
-                .icon(FontAwesome.Icon.faw_music)
-                .color(Color.WHITE)
-                .sizeDp(64)
-        );
-    }
-
-    public void fetchAlbumArtwork(String artistName, String albumName) {
-        try {
-            String LASTFM_API_KEY = "840e46089e774b43fd3ba374e1d9f5c4";
-
-            StringBuilder stringBuilder = new StringBuilder("http://ws.audioscrobbler.com/2.0/");
-            stringBuilder.append("?method=album.getinfo");
-            stringBuilder.append("&api_key=");
-            stringBuilder.append(LASTFM_API_KEY);
-            stringBuilder.append("&artist=" + URLEncoder.encode(artistName, "UTF-8"));
-            stringBuilder.append("&album=" + URLEncoder.encode(albumName, "UTF-8"));
-            stringBuilder.append("&format=json");
-            new RetrieveAlbumArtworkTask().execute(stringBuilder.toString());
-        }
-        catch(Exception e) {
-            Toast.makeText(getApplicationContext(), "Unable to fetch album artwork url", Toast.LENGTH_SHORT).show();
-            Log.d("HomeActivity", e.toString());
-        }
-    }
-
-    public class MediaChangeReciever extends BroadcastReceiver {
-        public final class BroadcastTypes {
-            static final String SPOTIFY_PACKAGE = "com.spotify.music";
-            static final String PLAYBACK_STATE_CHANGED = SPOTIFY_PACKAGE + ".playbackstatechanged";
-            static final String QUEUE_CHANGED = SPOTIFY_PACKAGE + ".queuechanged";
-            static final String METADATA_CHANGED = SPOTIFY_PACKAGE + ".metadatachanged";
-        }
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            // This is sent with all broadcasts, regardless of type. The value is taken from
-            // System.currentTimeMillis(), which you can compare to in order to determine how
-            // old the event is.
-            long timeSentInMs = intent.getLongExtra("timeSent", 0L);
-
-            String action = intent.getAction();
-
-            if (action.equals(BroadcastTypes.METADATA_CHANGED)) {
-                String trackId = intent.getStringExtra("id");
-                String artistName = intent.getStringExtra("artist");
-                String albumName = intent.getStringExtra("album");
-                String trackName = intent.getStringExtra("track");
-                int trackLengthInSec = intent.getIntExtra("length", 0);
-                // Do something with extracted information...
-
-                TextView mediaSongTextView = findViewById(R.id.mediaTrackTextView);
-                TextView mediaArtistTextView = findViewById(R.id.mediaArtistTextView);
-                TextView mediaAlbumTextView = findViewById(R.id.mediaAlbumTextView);
-
-                mediaSongTextView.setText(trackName);
-                mediaArtistTextView.setText(artistName);
-                mediaAlbumTextView.setText(albumName);
-
-                currentTrackLength = trackLengthInSec;
-
-                clearAlbumArtwork();
-                fetchAlbumArtwork(artistName, albumName);
-
-            } else if (action.equals(BroadcastTypes.PLAYBACK_STATE_CHANGED)) {
-                final boolean playing = intent.getBooleanExtra("playing", false);
-                int positionInMs = intent.getIntExtra("playbackPosition", 0);
-                // Do something with extracted information
-
-                currentTrackPosition = positionInMs;
-
-                Button mediaPlayPauseButton = findViewById(R.id.mediaPlayPauseButton);
-
-                if (playing) {
-                    startMediaPositionUpdater();
-                    mediaPlayPauseButton.setText("{faw-pause}");
-                }
-                else {
-                    stopMediaPositionUpdater();
-                    mediaPlayPauseButton.setText("{faw-play}");
-                }
-
-                ProgressBar mediaPositionProgressBar = findViewById(R.id.mediaPositionProgressBar);
-                TextView mediaTrackPositionTextView = findViewById(R.id.mediaTrackPositionTextView);
-                TextView mediaTrackLengthTextView = findViewById(R.id.mediaTrackLengthTextView);
-
-                mediaPositionProgressBar.setMax(currentTrackLength);
-                mediaPositionProgressBar.setProgress(currentTrackPosition);
-                mediaTrackPositionTextView.setText(String.format("%d", (currentTrackPosition / 60000))
-                        + ":" + doubleDigitFormat(String.format("%d", ((currentTrackPosition / 1000) % 60))));
-                mediaTrackLengthTextView.setText(String.format("%d", (currentTrackLength / 60000))
-                        + ":" + doubleDigitFormat(String.format("%d", ((currentTrackLength / 1000) % 60))));
-
-            } else if (action.equals(BroadcastTypes.QUEUE_CHANGED)) {
-                // Sent only as a notification, your app may want to respond accordingly.
-            }
-        }
-
-    }
-
     class WifiScanReceiver extends BroadcastReceiver
     {
         public void onReceive(Context c, Intent intent)
@@ -560,15 +310,6 @@ public class HomeActivity extends Activity implements SensorEventListener {
         {
             Toast.makeText(getApplicationContext(), wifiManager.getWifiState(), Toast.LENGTH_SHORT).show();
         }
-    }
-
-
-    public String doubleDigitFormat(String number) {
-        if (number.length() == 1) {
-            return "0" + number;
-        }
-
-        return number;
     }
 
     public class PowerConnectedReciever extends BroadcastReceiver {
@@ -685,51 +426,6 @@ public class HomeActivity extends Activity implements SensorEventListener {
         connectToWifiNetwork(primaryWifiSSID, primaryWifiPassphrase);
     }
 
-    public void startNewActivity(Context context, String packageName) {
-        Intent intent = context.getPackageManager().getLaunchIntentForPackage(packageName);
-        if (intent == null) {
-            // Bring user to the market or let them choose an app?
-            intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse("market://details?id=" + packageName));
-        }
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(intent);
-    }
-
-    public void onPlayPauseClick(View v) {
-        Intent i = new Intent(Intent.ACTION_MEDIA_BUTTON);
-        i.putExtra(Intent.EXTRA_KEY_EVENT,new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE));
-        sendOrderedBroadcast(i, null);
-
-        i = new Intent(Intent.ACTION_MEDIA_BUTTON);
-        i.putExtra(Intent.EXTRA_KEY_EVENT,new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE));
-        sendOrderedBroadcast(i, null);
-    }
-
-    public void onMediaPreviousClick(View v) {
-        Intent i = new Intent(Intent.ACTION_MEDIA_BUTTON);
-        i.putExtra(Intent.EXTRA_KEY_EVENT,new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PREVIOUS));
-        sendOrderedBroadcast(i, null);
-
-        i = new Intent(Intent.ACTION_MEDIA_BUTTON);
-        i.putExtra(Intent.EXTRA_KEY_EVENT,new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PREVIOUS));
-        sendOrderedBroadcast(i, null);
-    }
-
-    public void onMediaNextClick(View v) {
-        Intent i = new Intent(Intent.ACTION_MEDIA_BUTTON);
-        i.putExtra(Intent.EXTRA_KEY_EVENT,new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_NEXT));
-        sendOrderedBroadcast(i, null);
-
-        i = new Intent(Intent.ACTION_MEDIA_BUTTON);
-        i.putExtra(Intent.EXTRA_KEY_EVENT,new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_NEXT));
-        sendOrderedBroadcast(i, null);
-    }
-
-    public void onMediaAlbumArtworkClick(View v) {
-        startNewActivity(this, "com.spotify.music");
-    }
-
     public void onMuteButtonClick(View v) {
         IconicsButton muteButton = findViewById(R.id.muteButton);
 
@@ -748,19 +444,19 @@ public class HomeActivity extends Activity implements SensorEventListener {
     }
 
     public void onBackupButtonClick(View v) {
-        startNewActivity(this, "com.android.camera2");
+        Utils.StartNewActivity(this, "com.android.camera2");
     }
 
     public void onVoiceButtonClick(View v) {
-        startNewActivity(this, "com.google.android.googlequicksearchbox");
+        Utils.StartNewActivity(this, "com.google.android.googlequicksearchbox");
     }
 
     public void onClockButtonClick(View v) {
-        startNewActivity(this, "com.google.android.deskclock");
+        Utils.StartNewActivity(this, "com.google.android.deskclock");
     }
 
     public void onWebButtonClick(View v) {
-        startNewActivity(this, "com.android.chrome");
+        Utils.StartNewActivity(this, "com.android.chrome");
     }
 
     public void onAppsButtonClick(View v) {
@@ -769,48 +465,32 @@ public class HomeActivity extends Activity implements SensorEventListener {
     }
 
     public void onSettingsButtonClick(View v) {
-        startNewActivity(this, "com.android.settings");
+        Utils.StartNewActivity(this, "com.android.settings");
     }
 
     public void onWeatherButtonClick(View v) {
-        startNewActivity(this, "com.wunderground.android.weather");
+        Utils.StartNewActivity(this, "com.wunderground.android.weather");
     }
 
     public void onMapClick() {
-        startNewActivity(this, "com.google.android.apps.maps");
+        Utils.StartNewActivity(this, "com.google.android.apps.maps");
     }
 
     public void MuteAudio(){
         AudioManager mAlramMAnager = (AudioManager) getSystemService(this.AUDIO_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//            mAlramMAnager.adjustStreamVolume(AudioManager.STREAM_NOTIFICATION, AudioManager.ADJUST_MUTE, 0);
-//            mAlramMAnager.adjustStreamVolume(AudioManager.STREAM_ALARM, AudioManager.ADJUST_MUTE, 0);
             mAlramMAnager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE, 0);
-//            mAlramMAnager.adjustStreamVolume(AudioManager.STREAM_RING, AudioManager.ADJUST_MUTE, 0);
-//            mAlramMAnager.adjustStreamVolume(AudioManager.STREAM_SYSTEM, AudioManager.ADJUST_MUTE, 0);
         } else {
-//            mAlramMAnager.setStreamMute(AudioManager.STREAM_NOTIFICATION, true);
-//            mAlramMAnager.setStreamMute(AudioManager.STREAM_ALARM, true);
             mAlramMAnager.setStreamMute(AudioManager.STREAM_MUSIC, true);
-//            mAlramMAnager.setStreamMute(AudioManager.STREAM_RING, true);
-//            mAlramMAnager.setStreamMute(AudioManager.STREAM_SYSTEM, true);
         }
     }
 
     public void UnMuteAudio(){
-        AudioManager mAlramMAnager = (AudioManager) getSystemService(this.AUDIO_SERVICE);
+        AudioManager audioManager = (AudioManager) getSystemService(this.AUDIO_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//            mAlramMAnager.adjustStreamVolume(AudioManager.STREAM_NOTIFICATION, AudioManager.ADJUST_UNMUTE, 0);
-//            mAlramMAnager.adjustStreamVolume(AudioManager.STREAM_ALARM, AudioManager.ADJUST_UNMUTE, 0);
-            mAlramMAnager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE,0);
-//            mAlramMAnager.adjustStreamVolume(AudioManager.STREAM_RING, AudioManager.ADJUST_UNMUTE, 0);
-//            mAlramMAnager.adjustStreamVolume(AudioManager.STREAM_SYSTEM, AudioManager.ADJUST_UNMUTE, 0);
+            audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE,0);
         } else {
-//            mAlramMAnager.setStreamMute(AudioManager.STREAM_NOTIFICATION, false);
-//            mAlramMAnager.setStreamMute(AudioManager.STREAM_ALARM, false);
-            mAlramMAnager.setStreamMute(AudioManager.STREAM_MUSIC, false);
-//            mAlramMAnager.setStreamMute(AudioManager.STREAM_RING, false);
-//            mAlramMAnager.setStreamMute(AudioManager.STREAM_SYSTEM, false);
+            audioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
         }
     }
 
@@ -847,37 +527,8 @@ public class HomeActivity extends Activity implements SensorEventListener {
         IconicsButton muteButton = findViewById(R.id.muteButton);
         muteButton.setText("{faw-volume-off}\nMUTE");
 
-
         registerReceiver(new PowerConnectedReciever(), new IntentFilter(Intent.ACTION_POWER_CONNECTED));
         registerReceiver(new PowerDisconnectedReciever(), new IntentFilter(Intent.ACTION_POWER_DISCONNECTED));
-
-//        registerReceiver(wifiScanReceiver, new IntentFilter(
-//                WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-
-        IntentFilter iF = new IntentFilter();
-        iF.addAction("com.android.music.metachanged");
-        iF.addAction("com.android.music.playstatechanged");
-        iF.addAction("com.android.music.playbackcomplete");
-        iF.addAction("com.android.music.queuechanged");
-        iF.addAction("com.android.music.musicservicecommand");
-        iF.addAction("com.android.music.metachanged");
-        iF.addAction("com.android.music.playstatechanged");
-        iF.addAction("com.android.music.updateprogress");
-        iF.addAction("com.htc.music.metachanged");
-        iF.addAction("fm.last.android.metachanged");
-        iF.addAction("com.sec.android.app.music.metachanged");
-        iF.addAction("com.nullsoft.winamp.metachanged");
-        iF.addAction("com.amazon.mp3.metachanged");
-        iF.addAction("com.miui.player.metachanged");
-        iF.addAction("com.real.IMP.metachanged");
-        iF.addAction("com.sonyericsson.music.metachanged");
-        iF.addAction("com.rdio.android.metachanged");
-        iF.addAction("com.samsung.sec.android.MusicPlayer.metachanged");
-        iF.addAction("com.spotify.music.metadatachanged");
-        iF.addAction("com.spotify.music.playbackstatechanged");
-        iF.addAction("com.spotify.music.queuechanged");
-
-        registerReceiver(mediaChangeReciever, iF);
     }
 
     @Override

@@ -1,0 +1,138 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.bitbldr.eli.autodash.MediaBarFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="#585858"
+        android:orientation="horizontal">
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/mediaInfoView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:onClick="onMediaInfoViewClick">
+
+            <ImageView
+                android:id="@+id/mediaAlbumArtworkImageView"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_marginLeft="16dp"
+                android:background="#888"
+                android:scaleType="fitCenter"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/mediaTrackTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="No Info"
+                android:textColor="#fff"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@+id/mediaAlbumArtworkImageView"
+                app:layout_constraintTop_toTopOf="@+id/mediaAlbumArtworkImageView" />
+
+            <TextView
+                android:id="@+id/mediaArtistTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="No Info"
+                android:textColor="#fff"
+                app:layout_constraintStart_toEndOf="@+id/mediaAlbumArtworkImageView"
+                app:layout_constraintTop_toBottomOf="@+id/mediaTrackTextView" />
+
+            <TextView
+                android:id="@+id/mediaAlbumTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="No Info"
+                android:textColor="#ccc"
+                app:layout_constraintStart_toEndOf="@+id/mediaAlbumArtworkImageView"
+                app:layout_constraintTop_toBottomOf="@+id/mediaArtistTextView" />
+
+            <ProgressBar
+                android:id="@+id/mediaPositionProgressBar"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                android:layout_width="0dp"
+                android:layout_height="16dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:progress="75"
+                android:progressTint="@android:color/holo_orange_light"
+                app:layout_constraintBottom_toBottomOf="@+id/mediaTrackPositionTextView"
+                app:layout_constraintEnd_toStartOf="@+id/mediaTrackLengthTextView"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toEndOf="@+id/mediaTrackPositionTextView" />
+
+            <TextView
+                android:id="@+id/mediaTrackPositionTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="0:00"
+                android:textSize="12sp"
+                app:layout_constraintBaseline_toBaselineOf="@+id/mediaTrackLengthTextView"
+                app:layout_constraintStart_toEndOf="@+id/mediaAlbumArtworkImageView" />
+
+            <TextView
+                android:id="@+id/mediaTrackLengthTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:text="2:46"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toBottomOf="@+id/mediaAlbumArtworkImageView"
+                app:layout_constraintEnd_toEndOf="parent" />
+        </android.support.constraint.ConstraintLayout>
+
+        <Button
+            android:id="@+id/mediaPreviousButton"
+            android:layout_width="70dp"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"
+            android:text="{faw-backward}"
+            android:textColor="#fff"
+            android:textSize="30sp" />
+
+        <com.mikepenz.iconics.view.IconicsButton
+            style="?android:attr/buttonStyle"
+            android:id="@+id/mediaPlayPauseButton"
+            android:layout_width="70dp"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"
+            android:text="{faw-pause}"
+            android:textAllCaps="false"
+            android:textColor="#fff"
+            android:textSize="30sp" />
+
+        <Button
+            android:id="@+id/mediaNextButton"
+            android:layout_width="70dp"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"
+            android:text="{faw-forward}"
+            android:textColor="#fff"
+            android:textSize="30sp" />
+
+        <Button
+            android:id="@+id/mediaMenuButton"
+            android:layout_width="70dp"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"
+            android:text="{faw-bars}"
+            android:textColor="#fff"
+            android:textSize="30sp" />
+
+    </LinearLayout>
+
+</FrameLayout>
