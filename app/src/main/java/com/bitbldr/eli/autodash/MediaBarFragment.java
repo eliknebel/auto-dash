@@ -228,41 +228,54 @@ public class MediaBarFragment extends Fragment {
         Utils.StartNewActivity(getActivity(), "com.spotify.music");
     }
 
+    public void updateMediaPosition() {
+        ProgressBar mediaPositionProgressBar = getView().findViewById(R.id.mediaPositionProgressBar);
+        TextView mediaTrackPositionTextView = getView().findViewById(R.id.mediaTrackPositionTextView);
+
+        mediaPositionProgressBar.setProgress(currentTrackPosition);
+        mediaTrackPositionTextView.setText(String.format("%d", (currentTrackPosition / 60000))
+                + ":" + Utils.DoubleDigitFormat(String.format("%d", ((currentTrackPosition / 1000) % 60))));
+    }
+
     /**
      * Starts a new handler to update the media scrubber position every second
      */
     private void startMediaPositionUpdater() {
-        if (mediaPositionUpdater == null) {
-            new android.os.Handler().postDelayed(
-                new Runnable() {
-                    public void run() {
-                        mediaPositionUpdater = new Timer();
-                        mediaPositionUpdater.scheduleAtFixedRate(new TimerTask() {
-                            @Override
-                            public void run() {
-                                // Get a handler that can be used to post to the main thread
-                                Handler mainHandler = new Handler(Looper.getMainLooper());
+        updateMediaPosition();
 
-                                Runnable myRunnable = new Runnable() {
-                                    @Override
-                                    public void run() {
-                                    currentTrackPosition += 1000;
+        // ensure there is only ever one mediaPositionUpdater timer
+        synchronized(this) {
+            if (mediaPositionUpdater != null) {
+                return;
+            }
 
-                                    ProgressBar mediaPositionProgressBar = getView().findViewById(R.id.mediaPositionProgressBar);
-                                    TextView mediaTrackPositionTextView = getView().findViewById(R.id.mediaTrackPositionTextView);
-
-                                    mediaPositionProgressBar.setProgress(currentTrackPosition);
-                                    mediaTrackPositionTextView.setText(String.format("%d", (currentTrackPosition / 60000))
-                                            + ":" + Utils.DoubleDigitFormat(String.format("%d", ((currentTrackPosition / 1000) % 60))));
-                                    }
-                                };
-                                mainHandler.post(myRunnable);
-                            }
-                        }, 0, 1000);
-                    }
-                }, getMSUntilNextMediaProgressTick()
-            );
+            mediaPositionUpdater = new Timer();
         }
+
+        // schedule first update on the next media progress round second tick
+        new android.os.Handler().postDelayed(
+            new Runnable() {
+                public void run() {
+                    // schedule reoccurring updates every round second tick
+                    mediaPositionUpdater.scheduleAtFixedRate(new TimerTask() {
+                        @Override
+                        public void run() {
+                            // Get a handler that can be used to post to the main thread
+                            Handler mainHandler = new Handler(Looper.getMainLooper());
+
+                            Runnable myRunnable = new Runnable() {
+                                @Override
+                                public void run() {
+                                    currentTrackPosition += 1000;
+                                    updateMediaPosition();
+                                }
+                            };
+                            mainHandler.post(myRunnable);
+                        }
+                    }, 0, 1000);
+                }
+            }, getMSUntilNextMediaProgressTick()
+        );
     }
 
     /**
@@ -271,8 +284,9 @@ public class MediaBarFragment extends Fragment {
     private void stopMediaPositionUpdater() {
         if (mediaPositionUpdater != null) {
             mediaPositionUpdater.cancel();
-            mediaPositionUpdater = null;
         }
+
+        mediaPositionUpdater = null;
     }
 
     /**
@@ -401,7 +415,7 @@ public class MediaBarFragment extends Fragment {
         }
         catch(Exception e) {
             Toast.makeText(getActivity().getApplicationContext(), "Unable to fetch album artwork url", Toast.LENGTH_SHORT).show();
-            Log.d("HomeActivity", e.toString());
+            Log.w("WARNING", e.toString());
         }
     }
 
