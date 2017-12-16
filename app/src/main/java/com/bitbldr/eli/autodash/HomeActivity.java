@@ -7,8 +7,6 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.hardware.SensorEventListener;
-import android.location.Location;
-import android.location.LocationManager;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.net.wifi.ScanResult;
@@ -27,10 +25,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.model.LatLng;
 import com.mikepenz.iconics.context.IconicsContextWrapper;
 import com.mikepenz.iconics.view.IconicsButton;
 
@@ -55,15 +49,18 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorManager;
 
 public class HomeActivity extends Activity implements SensorEventListener,
-        MediaBarFragment.OnFragmentInteractionListener {
-
-    private static final int REQUEST_LOCATION = 1;
+        MediaBarFragment.OnFragmentInteractionListener,
+        com.bitbldr.eli.autodash.MapFragment.OnFragmentInteractionListener {
 
     // (10 min * 60 s/min * 1000 ms/s) = 600000ms
     private static final int WEATHER_UPDATE_INTERVAL_MS = 600000;
-
-    // Google Map
-    private GoogleMap googleMap;
+    // Boot logo duration = 2s
+    private static final int BOOT_LOGO_DURATION_MS = 2000;
+//    // Google maps request location flag
+//    private static final int REQUEST_LOCATION = 1;
+//
+//    // Google Map
+//    private GoogleMap googleMap;
 
     private SensorManager sensorManager;
 
@@ -87,11 +84,20 @@ public class HomeActivity extends Activity implements SensorEventListener,
     String primaryWifiSSID = "my wifi";
     String primaryWifiPassphrase = "passphrase";
 
+    String mobileWifiSSID = "my wifi";
+    String mobileWifiPassphrase = "passphrase";
+
+    View welcomeView;
+    View mainView;
+    private boolean isColdStart = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_home);
+        inflateAllViews();
+        showWelcomeView();
+//        showMainView();       // for debugging
 
         this.checkPermissions();
     }
@@ -160,12 +166,12 @@ public class HomeActivity extends Activity implements SensorEventListener,
             // Check Permissions Now
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    REQUEST_LOCATION);
+                    com.bitbldr.eli.autodash.MapFragment.REQUEST_LOCATION);
         }
     }
 
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if (requestCode == REQUEST_LOCATION) {
+        if (requestCode == com.bitbldr.eli.autodash.MapFragment.REQUEST_LOCATION) {
             if(grantResults.length == 1
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // We can now safely use the API we requested access to
@@ -304,6 +310,7 @@ public class HomeActivity extends Activity implements SensorEventListener,
             }
         }
     }
+
     class WifiConnectionReceiver extends BroadcastReceiver
     {
         public void onReceive(Context c, Intent intent)
@@ -315,10 +322,13 @@ public class HomeActivity extends Activity implements SensorEventListener,
     public class PowerConnectedReciever extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Toast.makeText(HomeActivity.this, "Power Connected", Toast.LENGTH_SHORT) .show();
+//            Toast.makeText(HomeActivity.this, "Power Connected", Toast.LENGTH_SHORT).show();
 
             wifiManager.setWifiEnabled(true);
             connectToWifiNetwork(primaryWifiSSID, primaryWifiPassphrase);
+
+            // open this app on power connect
+            startActivity(new Intent(context, HomeActivity.class));
         }
 
     }
@@ -326,72 +336,16 @@ public class HomeActivity extends Activity implements SensorEventListener,
     public class PowerDisconnectedReciever extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Toast.makeText(HomeActivity.this, "Power Disconnected", Toast.LENGTH_SHORT) .show();
+//            Toast.makeText(HomeActivity.this, "Power Disconnected", Toast.LENGTH_SHORT) .show();
 
             wifiManager.disableNetwork(selectedNetwork);
             wifiManager.removeNetwork(selectedNetwork);
             wifiManager.disconnect();
             wifiManager.setWifiEnabled(false);
+
+            isColdStart = true;
         }
 
-    }
-
-    /**
-     * function to load map. If map is not created it will create it for you
-     * */
-    private void initMap() {
-        if (googleMap == null) {
-            googleMap = ((MapFragment) getFragmentManager().findFragmentById(
-                    R.id.map)).getMap();
-
-            // check if map is created successfully or not
-            if (googleMap == null) {
-                Toast.makeText(getApplicationContext(),
-                        "Unable to create maps", Toast.LENGTH_SHORT)
-                        .show();
-            }
-        }
-
-        Location locationCt;
-        LocationManager locationManagerCt = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-        try {
-            locationCt = locationManagerCt
-                    .getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
-        LatLng latLng = new LatLng(locationCt.getLatitude(),
-                locationCt.getLongitude());
-        googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-//        googleMap.addMarker(new MarkerOptions().position(latLng)
-//                .title("My Spot").snippet("This is my spot!")
-//                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_car)));
-
-        googleMap.setMyLocationEnabled(true);
-
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-
-        // Zoom in the Google Map
-        googleMap.animateCamera(CameraUpdateFactory.zoomTo(18));
-
-        }
-        catch(SecurityException e) {
-            Toast.makeText(getApplicationContext(),
-                    "Unable to get location (No Permission)", Toast.LENGTH_SHORT)
-                    .show();
-        }
-        catch(Exception e) {
-            Toast.makeText(getApplicationContext(),
-                    "Unable to get location", Toast.LENGTH_SHORT)
-                    .show();
-        }
-
-        googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-
-            @Override
-            public void onMapClick(LatLng arg0) {
-                HomeActivity.this.onMapClick();
-            }
-        });
     }
 
     public void initSensors() {
@@ -472,10 +426,6 @@ public class HomeActivity extends Activity implements SensorEventListener,
         Utils.StartNewActivity(this, "com.wunderground.android.weather");
     }
 
-    public void onMapClick() {
-        Utils.StartNewActivity(this, "com.google.android.apps.maps");
-    }
-
     public void MuteAudio(){
         AudioManager mAlramMAnager = (AudioManager) getSystemService(this.AUDIO_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -505,10 +455,22 @@ public class HomeActivity extends Activity implements SensorEventListener,
         );
     }
 
-    public void loadHomeContent() {
+    public void inflateAllViews() {
+        if (welcomeView == null) {
+            welcomeView = getLayoutInflater().inflate(R.layout.welcome, null);
+        }
 
-        // AVOID APP CRASH, DO THIS IN ONCREATE FOR NOW
-//        setContentView(R.layout.activity_home);
+        if (mainView == null) {
+            mainView = getLayoutInflater().inflate(R.layout.activity_home, null);
+        }
+    }
+
+    public void showWelcomeView() {
+        setContentView(welcomeView);
+    }
+
+    public void showMainView() {
+        setContentView(mainView);
 
         // initialize your android device sensor capabilities
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -521,7 +483,6 @@ public class HomeActivity extends Activity implements SensorEventListener,
         updateClock();
         updateWeather();
         initSensors();
-        initMap();
         initWifi();
 
         IconicsButton muteButton = findViewById(R.id.muteButton);
@@ -533,19 +494,26 @@ public class HomeActivity extends Activity implements SensorEventListener,
 
     @Override
     protected void onResume() {
-//        setContentView(R.layout.welcome);
-//        setFullscreenMode();
-//
-//        new Handler().postDelayed(
-//            new Runnable() {
-//                public void run() {
-//                    loadHomeContent();
-//                }
-//            },
-//            3000
-//        );
+        if (isColdStart) {
+            inflateAllViews();
+            showWelcomeView();
 
-        loadHomeContent();
+            new Handler().postDelayed(
+                    new Runnable() {
+                        public void run() {
+                            showMainView();
+                            isColdStart = false;
+                        }
+                    },
+                    BOOT_LOGO_DURATION_MS
+            );
+        }
+        else {
+            showMainView();
+        }
+//        inflateAllViews();        // for debugging
+//        showMainView();
+
         setFullscreenMode();
 
         super.onResume();
