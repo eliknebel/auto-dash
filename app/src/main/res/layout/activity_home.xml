@@ -114,125 +114,13 @@
 
         </LinearLayout>
 
-        <LinearLayout
+        <fragment
+            android:id="@+id/statusbar"
+            android:name="com.bitbldr.eli.autodash.StatusBarFragment"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
-            android:background="@color/black"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/internalTempButton"
-                android:layout_width="100dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@android:color/transparent"
-                android:fontFamily="@font/open_sans_light"
-                android:paddingLeft="20dp"
-                android:text="{faw-thermometer-three-quarters} --°"
-                android:textAlignment="viewStart"
-                android:textColor="#ffffff"
-                android:textSize="36sp" />
-
-            <com.mikepenz.iconics.view.IconicsButton
-                android:id="@+id/muteButton"
-                style="?android:attr/buttonStyle"
-                android:layout_width="70dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@android:color/transparent"
-                android:drawableTint="@android:color/white"
-                android:onClick="onMuteButtonClick"
-                android:text="{faw-volume-up}&#10;MUTE"
-                android:textColor="#ffffff"
-                android:textSize="18sp" />
-
-            <Button
-                android:id="@+id/backupButton"
-                android:layout_width="70dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@android:color/transparent"
-                android:drawableTint="@android:color/white"
-                android:onClick="onBackupButtonClick"
-                android:text="{faw-video-camera}&#10;BACKUP"
-                android:textColor="#ffffff"
-                android:textSize="18sp" />
-
-            <Button
-                android:id="@+id/voiceButton"
-                android:layout_width="70dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@android:color/transparent"
-                android:drawableTint="@android:color/white"
-                android:onClick="onVoiceButtonClick"
-                android:text="{faw-microphone}&#10;VOICE"
-                android:textColor="#ffffff"
-                android:textSize="18sp" />
-
-            <Button
-                android:id="@+id/clockButton"
-                android:layout_width="150dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@android:color/transparent"
-                android:fontFamily="@font/open_sans_light"
-                android:onClick="onClockButtonClick"
-                android:text="12:00 PM"
-                android:textColor="#ffffff"
-                android:textSize="36sp" />
-
-            <Button
-                android:id="@+id/webButton"
-                android:layout_width="70dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@android:color/transparent"
-                android:drawableTint="@android:color/white"
-                android:onClick="onWebButtonClick"
-                android:text="{faw-globe}&#10;WEB"
-                android:textColor="#ffffff"
-                android:textSize="18sp" />
-
-            <Button
-                android:id="@+id/appsButton"
-                android:layout_width="70dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@android:color/transparent"
-                android:drawableTint="@android:color/white"
-                android:onClick="onAppsButtonClick"
-                android:text="{faw-th}&#10;APPS"
-                android:textColor="#ffffff"
-                android:textSize="18sp" />
-
-            <Button
-                android:id="@+id/settingsButton"
-                android:layout_width="70dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@android:color/transparent"
-                android:drawableTint="@android:color/white"
-                android:onClick="onSettingsButtonClick"
-                android:text="{faw-wrench}&#10;SETTINGS"
-                android:textColor="#ffffff"
-                android:textSize="18sp" />
-
-            <Button
-                android:id="@+id/weatherButton"
-                android:layout_width="120dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@android:color/transparent"
-                android:fontFamily="@font/open_sans_light"
-                android:onClick="onWeatherButtonClick"
-                android:paddingRight="10dp"
-                android:text="--° {wic-day-cloudy}"
-                android:textAlignment="textEnd"
-                android:textColor="#ffffff"
-                android:textSize="36sp" />
-
-        </LinearLayout>
+            android:layout_height="wrap_content"
+            android:layout="@layout/fragment_status_bar"
+            tools:layout="@layout/fragment_status_bar" />
 
     </LinearLayout>
 

@@ -50,17 +50,15 @@ import android.hardware.SensorManager;
 
 public class HomeActivity extends Activity implements SensorEventListener,
         MediaBarFragment.OnFragmentInteractionListener,
-        com.bitbldr.eli.autodash.MapFragment.OnFragmentInteractionListener {
+        com.bitbldr.eli.autodash.MapFragment.OnFragmentInteractionListener,
+        StatusBarFragment.OnFragmentInteractionListener {
 
-    // (10 min * 60 s/min * 1000 ms/s) = 600000ms
-    private static final int WEATHER_UPDATE_INTERVAL_MS = 600000;
+    // Application views
+    View welcomeView;
+    View mainView;
+
     // Boot logo duration = 2s
     private static final int BOOT_LOGO_DURATION_MS = 2000;
-//    // Google maps request location flag
-//    private static final int REQUEST_LOCATION = 1;
-//
-//    // Google Map
-//    private GoogleMap googleMap;
 
     private SensorManager sensorManager;
 
@@ -74,8 +72,6 @@ public class HomeActivity extends Activity implements SensorEventListener,
     private final float[] mRotationMatrix = new float[9];
     private final float[] mOrientationAngles = new float[3];
 
-    private boolean isMuting = false;
-
     WifiManager wifiManager;
     WifiConnectionReceiver wifiConnectionReceiver;
     WifiScanReceiver wifiScanReceiver;
@@ -87,8 +83,6 @@ public class HomeActivity extends Activity implements SensorEventListener,
     String mobileWifiSSID = "my wifi";
     String mobileWifiPassphrase = "passphrase";
 
-    View welcomeView;
-    View mainView;
     private boolean isColdStart = true;
 
     @Override
@@ -105,59 +99,6 @@ public class HomeActivity extends Activity implements SensorEventListener,
     @Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(IconicsContextWrapper.wrap(newBase));
-    }
-
-    private String getWeatherConditionsIcon(String condition, boolean isNight) {
-        HashMap<String, String> weatherIconMap = new HashMap<>();
-
-        if (isNight) {
-            weatherIconMap.put("chanceflurries", "{wic-day-snow-wind}");
-            weatherIconMap.put("chancerain", "{wic-night-alt-rain}");
-            weatherIconMap.put("chancesleet", "{wic-night-alt-rain-mix}");
-            weatherIconMap.put("chancesnow", "{wic-night-alt-snow-wind}");
-            weatherIconMap.put("chancetstorms", "{wic-storm-showers}");
-            weatherIconMap.put("mostlycloudy", "{wic-cloudy}");
-            weatherIconMap.put("mostlysunny", "{wic-night-alt-cloudy}");
-            weatherIconMap.put("partlycloudy", "{wic-cloud}");
-            weatherIconMap.put("partlysunny", "{wic-night-alt-cloudy}");
-            weatherIconMap.put("clear", "{wic-night-clear}");
-            weatherIconMap.put("cloudy", "{wic-cloudy}");
-            weatherIconMap.put("flurries", "{wic-snow-wind}");
-            weatherIconMap.put("fog", "{wic-fog}");
-            weatherIconMap.put("hazy", "{wic-cloudy-windy}");
-            weatherIconMap.put("sleet", "{wic-rain-mix}");
-            weatherIconMap.put("rain", "{wic-raindrops}");
-            weatherIconMap.put("snow", "{wic-snowflake-cold}");
-            weatherIconMap.put("sunny", "{wic-night-clear}");
-            weatherIconMap.put("tstorms", "{wic-thunderstorm}");
-        }
-        else {
-            weatherIconMap.put("chanceflurries", "{wic-day-snow-wind}");
-            weatherIconMap.put("chancerain", "{wic-day-rain}");
-            weatherIconMap.put("chancesleet", "{wic-day-sleet}");
-            weatherIconMap.put("chancesnow", "{wic-day-snow}");
-            weatherIconMap.put("chancetstorms", "{wic-day-storm-showers}");
-            weatherIconMap.put("mostlycloudy", "{wic-cloudy}");
-            weatherIconMap.put("mostlysunny", "{wic-day-sunny-overcast}");
-            weatherIconMap.put("partlycloudy", "{wic-cloud}");
-            weatherIconMap.put("partlysunny", "{wic-day-cloudy}");
-            weatherIconMap.put("clear", "{wic-day-sunny}");
-            weatherIconMap.put("cloudy", "{wic-cloudy}");
-            weatherIconMap.put("flurries", "{wic-snow-wind}");
-            weatherIconMap.put("fog", "{wic-fog}");
-            weatherIconMap.put("hazy", "{wic-cloudy-windy}");
-            weatherIconMap.put("sleet", "{wic-rain-mix}");
-            weatherIconMap.put("rain", "{wic-raindrops}");
-            weatherIconMap.put("snow", "{wic-snowflake-cold}");
-            weatherIconMap.put("sunny", "{wic-day-sunny}");
-            weatherIconMap.put("tstorms", "{wic-thunderstorm}");
-        }
-
-        if (weatherIconMap.get(condition) == null) {
-            return "{wic-na}";
-        }
-
-        return weatherIconMap.get(condition);
     }
 
     private void checkPermissions() {
@@ -182,116 +123,9 @@ public class HomeActivity extends Activity implements SensorEventListener,
         }
     }
 
-    private void updateClock() {
-        Date date = new Date();
-        TimeZone tz = TimeZone.getTimeZone("America/New_York");
-        Calendar now = GregorianCalendar.getInstance(tz);
-        now.setTime(date);
-        int daylightSavingsOffset = tz.inDaylightTime(date) ? 0 : 1;
-
-        String hour = "" + ((now.get(Calendar.HOUR_OF_DAY) % 12) + 1 - daylightSavingsOffset);
-        hour = hour.equals("0") ? "12" : hour;
-
-        String minute = now.get(Calendar.MINUTE) < 10
-                ? "0" + now.get(Calendar.MINUTE)
-                : "" + now.get(Calendar.MINUTE);
-
-        String ampm = (now.get(Calendar.AM_PM) == 0 ? " AM" : " PM");
-
-        String currentTime = hour + ":" + minute + ampm;
-
-        Button clockButton = findViewById(R.id.clockButton);
-        clockButton.setText(currentTime);
-
-        initNextClockUpdate();
-    }
-
-    private long getMSUntilNextClockTick() {
-        long currentMS = System.currentTimeMillis();
-
-        return (60 - ((currentMS / 1000) % 60)) * 1000;
-    }
-
-    private void initNextClockUpdate() {
-        new android.os.Handler().postDelayed(
-            new Runnable() {
-                public void run() {
-                    updateClock();
-                }
-            },
-        getMSUntilNextClockTick());
-    }
-
-    private void updateWeather() {
-        new RetrieveWeatherTask().execute();
-
-        initNextWeatherUpdate();
-    }
-
-    private void initNextWeatherUpdate() {
-        new android.os.Handler().postDelayed(
-            new Runnable() {
-                public void run() {
-                    updateWeather();
-                }
-            },
-            WEATHER_UPDATE_INTERVAL_MS
-        );
-    }
-
     @Override
     public void onFragmentInteraction(Uri uri) {
         // handle fragment interactions
-    }
-
-    public class RetrieveWeatherTask extends AsyncTask<Void, Void, String> {
-        protected void onPreExecute() {
-            // do nothing, for now
-        }
-
-        protected String doInBackground(Void... urls) {
-            try {
-                String API_KEY = "175638bf5ad25874";
-                URL url = new URL("http://api.wunderground.com/api/" + API_KEY + "/conditions/q/PA/Pittsburgh.json");
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                try {
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-                    StringBuilder stringBuilder = new StringBuilder();
-                    String line;
-                    while ((line = bufferedReader.readLine()) != null) {
-                        stringBuilder.append(line).append("\n");
-                    }
-                    bufferedReader.close();
-                    return stringBuilder.toString();
-                }
-                finally{
-                    urlConnection.disconnect();
-                }
-            }
-            catch(Exception e) {
-                Log.e("ERROR", e.getMessage(), e);
-                return null;
-            }
-        }
-
-        protected void onPostExecute(String response) {
-            if(response == null) {
-                Log.e("ERROR", "Weather response is null");
-                return;
-            }
-
-            Button currentWeatherButton = findViewById(R.id.weatherButton);
-
-            try {
-                JSONObject object = (JSONObject) new JSONTokener(response).nextValue();
-                int currentTemp_f = object.getJSONObject("current_observation").getInt("temp_f");
-                String currentConditions = object.getJSONObject("current_observation").getString("icon");
-
-                currentWeatherButton.setText(currentTemp_f + "° " + getWeatherConditionsIcon(currentConditions, false));
-            } catch (JSONException e) {
-                // Appropriate error handling code
-            }
-        }
     }
 
     class WifiScanReceiver extends BroadcastReceiver
@@ -380,70 +214,6 @@ public class HomeActivity extends Activity implements SensorEventListener,
         connectToWifiNetwork(primaryWifiSSID, primaryWifiPassphrase);
     }
 
-    public void onMuteButtonClick(View v) {
-        IconicsButton muteButton = findViewById(R.id.muteButton);
-
-        if (isMuting) {
-            UnMuteAudio();
-            muteButton.setText("{faw-volume-off}\nMUTE");
-            muteButton.setTextColor(Color.WHITE);
-        }
-        else {
-            MuteAudio();
-            muteButton.setText("{faw-volume-off}\nMUTING");
-            muteButton.setTextColor(Color.RED);
-        }
-
-        isMuting = !isMuting;
-    }
-
-    public void onBackupButtonClick(View v) {
-        Utils.StartNewActivity(this, "com.android.camera2");
-    }
-
-    public void onVoiceButtonClick(View v) {
-        Utils.StartNewActivity(this, "com.google.android.googlequicksearchbox");
-    }
-
-    public void onClockButtonClick(View v) {
-        Utils.StartNewActivity(this, "com.google.android.deskclock");
-    }
-
-    public void onWebButtonClick(View v) {
-        Utils.StartNewActivity(this, "com.android.chrome");
-    }
-
-    public void onAppsButtonClick(View v) {
-        Intent i = new Intent(this, AppsListActivity.class);
-        startActivity(i);
-    }
-
-    public void onSettingsButtonClick(View v) {
-        Utils.StartNewActivity(this, "com.android.settings");
-    }
-
-    public void onWeatherButtonClick(View v) {
-        Utils.StartNewActivity(this, "com.wunderground.android.weather");
-    }
-
-    public void MuteAudio(){
-        AudioManager mAlramMAnager = (AudioManager) getSystemService(this.AUDIO_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            mAlramMAnager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE, 0);
-        } else {
-            mAlramMAnager.setStreamMute(AudioManager.STREAM_MUSIC, true);
-        }
-    }
-
-    public void UnMuteAudio(){
-        AudioManager audioManager = (AudioManager) getSystemService(this.AUDIO_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE,0);
-        } else {
-            audioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
-        }
-    }
-
     public void setFullscreenMode() {
         getWindow().getDecorView().setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -480,8 +250,6 @@ public class HomeActivity extends Activity implements SensorEventListener,
 
         setFullscreenMode();
 
-        updateClock();
-        updateWeather();
         initSensors();
         initWifi();
 

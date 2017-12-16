@@ -49,7 +49,7 @@ import java.util.TimerTask;
 public class MediaBarFragment extends Fragment {
     private Context context;
 
-    private View fragmentView;
+    private View view;
 
     private MediaChangeReciever mediaChangeReciever = new MediaChangeReciever();
 
@@ -73,12 +73,12 @@ public class MediaBarFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        fragmentView =  inflater.inflate(R.layout.fragment_media_bar, container, false);
+        view =  inflater.inflate(R.layout.fragment_media_bar, container, false);
 
         // initialize fragment event listeners view
-        initEventListeners();
+        bindEventHandlers(view);
 
-        return fragmentView;
+        return view;
     }
 
     @Override
@@ -152,26 +152,26 @@ public class MediaBarFragment extends Fragment {
     /**
      * Registers fragment views with their event handlers
      */
-    private void initEventListeners() {
-        fragmentView.findViewById(R.id.mediaPlayPauseButton).setOnClickListener(new View.OnClickListener()
+    private void bindEventHandlers(View view) {
+        view.findViewById(R.id.mediaPlayPauseButton).setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v) { onMediaPlayPauseClick(v); }
         });
 
-        fragmentView.findViewById(R.id.mediaNextButton).setOnClickListener(new View.OnClickListener()
+        view.findViewById(R.id.mediaNextButton).setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v) { onMediaNextClick(v); }
         });
 
-        fragmentView.findViewById(R.id.mediaPreviousButton).setOnClickListener(new View.OnClickListener()
+        view.findViewById(R.id.mediaPreviousButton).setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v) { onMediaPreviousClick(v); }
         });
 
-        fragmentView.findViewById(R.id.mediaInfoView).setOnClickListener(new View.OnClickListener()
+        view.findViewById(R.id.mediaInfoView).setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v) { onMediaInfoViewClick(v); }
