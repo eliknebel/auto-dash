@@ -227,7 +227,8 @@ public class StatusBarFragment extends Fragment {
     }
 
     public void onVoiceButtonClick(View v) {
-        Utils.StartNewActivity(getActivity(), "com.google.android.googlequicksearchbox");
+//        Utils.StartNewActivity(getActivity(), "com.google.android.googlequicksearchbox");
+        startActivity(new Intent(Intent.ACTION_VOICE_COMMAND).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
     }
 
     public void onClockButtonClick(View v) {

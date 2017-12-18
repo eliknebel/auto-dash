@@ -17,77 +17,13 @@
             android:layout_weight="1"
             android:orientation="horizontal">
 
-            <android.support.constraint.ConstraintLayout
+            <fragment
+                android:id="@+id/vehicle"
+                android:name="com.bitbldr.eli.autodash.VehicleFragment"
                 android:layout_width="350dp"
                 android:layout_height="match_parent"
-                android:background="#383838">
-
-                <ImageView
-                    android:id="@+id/imageView"
-                    android:layout_width="172dp"
-                    android:layout_height="197dp"
-                    android:layout_marginTop="84dp"
-                    android:src="@drawable/wrangler"
-                    android:visibility="visible"
-                    app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/include2" />
-
-                <include
-                    android:id="@+id/include2"
-                    layout="@layout/fragment_vehicle_speed"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintHorizontal_bias="0.4"
-                    app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textView" />
-
-                <include
-                    android:id="@+id/include"
-                    layout="@layout/fragment_vehicle_gear"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <View
-                    android:id="@+id/view"
-                    android:layout_width="300dp"
-                    android:layout_height="1dp"
-                    android:layout_marginEnd="20dp"
-                    android:layout_marginStart="20dp"
-                    android:layout_marginTop="6dp"
-                    android:background="#fff"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/include" />
-
-                <TextView
-                    android:id="@+id/textView"
-                    android:layout_width="301dp"
-                    android:layout_height="21dp"
-                    android:layout_marginTop="6dp"
-                    android:text="2016 Jeep Wrangler 75th Anniversary Edition"
-                    android:textAlignment="center"
-                    android:textColor="#fff"
-                    app:layout_constraintHorizontal_bias="0.51"
-                    app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/view" />
-
-                <include
-                    layout="@layout/fragment_vehicle_info"
-                    android:layout_width="282dp"
-                    android:layout_height="96dp"
-                    android:layout_marginTop="16dp"
-                    app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/imageView" />
-
-            </android.support.constraint.ConstraintLayout>
+                android:layout="@layout/fragment_vehicle"
+                tools:layout="@layout/fragment_vehicle" />
 
 
             <LinearLayout
@@ -97,10 +33,11 @@
 
                 <fragment
                     android:id="@+id/map"
-                    android:name="com.bitbldr.eli.autodash.MapFragment"
+                    android:name="com.bitbldr.eli.autodash.AutoMapFragment"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="1" />
+                    android:layout_weight="1"
+                    tools:layout="@layout/fragment_map" />
 
                 <fragment
                     android:id="@+id/mediabar"

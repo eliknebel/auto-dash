@@ -1,57 +1,35 @@
 package com.bitbldr.eli.autodash;
 
 import android.Manifest;
+import android.app.admin.DevicePolicyManager;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.hardware.SensorEventListener;
-import android.media.AudioManager;
 import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.View;
-import android.app.Activity;
+import android.support.v4.app.FragmentActivity;
 import android.content.Intent;
-import android.widget.Button;
-import android.widget.TextView;
+import android.view.WindowManager;
 import android.widget.Toast;
-
 import com.mikepenz.iconics.context.IconicsContextWrapper;
 import com.mikepenz.iconics.view.IconicsButton;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
 
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorManager;
-
-public class HomeActivity extends Activity implements SensorEventListener,
+public class HomeActivity extends FragmentActivity implements
         MediaBarFragment.OnFragmentInteractionListener,
-        com.bitbldr.eli.autodash.MapFragment.OnFragmentInteractionListener,
-        StatusBarFragment.OnFragmentInteractionListener {
+        AutoMapFragment.OnFragmentInteractionListener,
+        StatusBarFragment.OnFragmentInteractionListener,
+        VehicleFragment.OnFragmentInteractionListener {
 
     // Application views
     View welcomeView;
@@ -59,18 +37,6 @@ public class HomeActivity extends Activity implements SensorEventListener,
 
     // Boot logo duration = 2s
     private static final int BOOT_LOGO_DURATION_MS = 2000;
-
-    private SensorManager sensorManager;
-
-    private Sensor compassSensor;
-    private Sensor accelerometerSensor;
-    private Sensor magneticFieldSensor;
-
-    private final float[] mAccelerometerReading = new float[3];
-    private final float[] mMagnetometerReading = new float[3];
-
-    private final float[] mRotationMatrix = new float[9];
-    private final float[] mOrientationAngles = new float[3];
 
     WifiManager wifiManager;
     WifiConnectionReceiver wifiConnectionReceiver;
@@ -91,9 +57,10 @@ public class HomeActivity extends Activity implements SensorEventListener,
 
         inflateAllViews();
         showWelcomeView();
-//        showMainView();       // for debugging
 
         this.checkPermissions();
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     @Override
@@ -107,12 +74,12 @@ public class HomeActivity extends Activity implements SensorEventListener,
             // Check Permissions Now
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    com.bitbldr.eli.autodash.MapFragment.REQUEST_LOCATION);
+                    AutoMapFragment.REQUEST_LOCATION);
         }
     }
 
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if (requestCode == com.bitbldr.eli.autodash.MapFragment.REQUEST_LOCATION) {
+        if (requestCode == AutoMapFragment.REQUEST_LOCATION) {
             if(grantResults.length == 1
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // We can now safely use the API we requested access to
@@ -156,10 +123,8 @@ public class HomeActivity extends Activity implements SensorEventListener,
     public class PowerConnectedReciever extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-//            Toast.makeText(HomeActivity.this, "Power Connected", Toast.LENGTH_SHORT).show();
-
-            wifiManager.setWifiEnabled(true);
-            connectToWifiNetwork(primaryWifiSSID, primaryWifiPassphrase);
+//            wifiManager.setWifiEnabled(true);
+//            connectToWifiNetwork(primaryWifiSSID, primaryWifiPassphrase);
 
             // open this app on power connect
             startActivity(new Intent(context, HomeActivity.class));
@@ -170,28 +135,16 @@ public class HomeActivity extends Activity implements SensorEventListener,
     public class PowerDisconnectedReciever extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-//            Toast.makeText(HomeActivity.this, "Power Disconnected", Toast.LENGTH_SHORT) .show();
-
             wifiManager.disableNetwork(selectedNetwork);
             wifiManager.removeNetwork(selectedNetwork);
             wifiManager.disconnect();
             wifiManager.setWifiEnabled(false);
 
             isColdStart = true;
+
+            turnScreenOff(context);
         }
 
-    }
-
-    public void initSensors() {
-        // for the system's orientation sensor registered listeners
-        sensorManager.registerListener(this, compassSensor, SensorManager.SENSOR_DELAY_GAME);
-
-//        sensorManager.registerListener(this, gyroscopeSensor, SensorManager.SENSOR_DELAY_GAME);
-
-        sensorManager.registerListener(this, accelerometerSensor,
-                SensorManager.SENSOR_DELAY_NORMAL, SensorManager.SENSOR_DELAY_UI);
-        sensorManager.registerListener(this, magneticFieldSensor,
-                SensorManager.SENSOR_DELAY_NORMAL, SensorManager.SENSOR_DELAY_UI);
     }
 
     public void initWifi() {
@@ -242,15 +195,8 @@ public class HomeActivity extends Activity implements SensorEventListener,
     public void showMainView() {
         setContentView(mainView);
 
-        // initialize your android device sensor capabilities
-        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        compassSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
-        accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        magneticFieldSensor = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-
         setFullscreenMode();
 
-        initSensors();
         initWifi();
 
         IconicsButton muteButton = findViewById(R.id.muteButton);
@@ -262,6 +208,8 @@ public class HomeActivity extends Activity implements SensorEventListener,
 
     @Override
     protected void onResume() {
+        super.onResume();
+
         if (isColdStart) {
             inflateAllViews();
             showWelcomeView();
@@ -277,80 +225,21 @@ public class HomeActivity extends Activity implements SensorEventListener,
             );
         }
         else {
+            inflateAllViews();
             showMainView();
         }
 //        inflateAllViews();        // for debugging
 //        showMainView();
 
         setFullscreenMode();
-
-        super.onResume();
     }
 
     @Override
     public void onPause() {
+        super.onPause();
         // to stop the listener and save battery
-        sensorManager.unregisterListener(this);
 
 //        unregisterReceiver(wifiScanReceiver);
-
-        super.onPause();
-    }
-
-    private String degreesToHeading(double deg) {
-        final String[] HEADINGS = new String[]{"N", "NE", "E", "SE", "S", "SW", "W", "NW"};
-
-        int sector = (int) Math.floor(((deg + 22) % 360) / 45);
-
-        return HEADINGS[sector];
-    }
-
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        if (event.sensor == compassSensor) {
-            // get the angle around the z-axis rotated
-            float degree = Math.round(event.values[0]);
-
-            TextView compassTextView = findViewById(R.id.compassTextView);
-            compassTextView.setText("{faw-compass} " + degreesToHeading(degree));
-        }
-        if (event.sensor == accelerometerSensor) {
-            System.arraycopy(event.values, 0, mAccelerometerReading,
-                    0, mAccelerometerReading.length);
-        }
-        else if (event.sensor == magneticFieldSensor) {
-            System.arraycopy(event.values, 0, mMagnetometerReading,
-                    0, mMagnetometerReading.length);
-        }
-
-        updateOrientationAngles();
-        TextView pitchTextView = findViewById(R.id.pitchTextView);
-        TextView rollTextView = findViewById(R.id.rollTextView);
-        TextView yawTextView = findViewById(R.id.yawTextView);
-
-
-        pitchTextView.setText(String.format("%.1f", mOrientationAngles[0]));
-        rollTextView.setText(String.format("%.1f", mOrientationAngles[1]));
-        yawTextView.setText(String.format("%.1f", mOrientationAngles[2]));
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        // not in use
-    }
-
-    // Compute the three orientation angles based on the most recent readings from
-    // the device's accelerometer and magnetometer.
-    public void updateOrientationAngles() {
-        // Update rotation matrix, which is needed to update orientation angles.
-        sensorManager.getRotationMatrix(mRotationMatrix, null,
-                mAccelerometerReading, mMagnetometerReading);
-
-        // "mRotationMatrix" now has up-to-date information.
-
-        sensorManager.getOrientation(mRotationMatrix, mOrientationAngles);
-
-        // "mOrientationAngles" now has up-to-date information.
     }
 
     public void scanForWifiNetworks() {
@@ -392,6 +281,29 @@ public class HomeActivity extends Activity implements SensorEventListener,
 
                 break;
             }
+        }
+    }
+
+    /**
+     * Turns the screen off and locks the device, provided that proper rights
+     * are given.
+     *
+     * @param context
+     *            - The application context
+     */
+    static void turnScreenOff(final Context context) {
+        DevicePolicyManager policyManager = (DevicePolicyManager) context
+                .getSystemService(Context.DEVICE_POLICY_SERVICE);
+        ComponentName adminReceiver = new ComponentName(context,
+                ScreenOffAdminReceiver.class);
+        boolean admin = policyManager.isAdminActive(adminReceiver);
+        if (admin) {
+            Log.i("INFO", "Going to sleep now.");
+            policyManager.lockNow();
+        } else {
+            Log.i("INFO", "Not an admin");
+            Toast.makeText(context, "Device admin not enabled",
+                    Toast.LENGTH_LONG).show();
         }
     }
 

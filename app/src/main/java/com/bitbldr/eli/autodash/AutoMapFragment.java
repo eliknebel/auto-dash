@@ -5,24 +5,35 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Toast;
+
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link MapFragment.OnFragmentInteractionListener} interface
+ * {@link AutoMapFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
  */
-public class MapFragment extends Fragment {
+public class AutoMapFragment extends android.support.v4.app.Fragment implements OnMapReadyCallback {
     private OnFragmentInteractionListener mListener;
 
     // Google maps request location flag
@@ -33,7 +44,7 @@ public class MapFragment extends Fragment {
 
     View view;
 
-    public MapFragment() {
+    public AutoMapFragment() {
         // Required empty public constructor
     }
 
@@ -43,11 +54,11 @@ public class MapFragment extends Fragment {
 //     *
 //     * @param param1 Parameter 1.
 //     * @param param2 Parameter 2.
-//     * @return A new instance of fragment MapFragment.
+//     * @return A new instance of fragment AutoMapFragment.
 //     */
 //    // TODO: Rename and change types and number of parameters
-//    public static MapFragment newInstance(String param1, String param2) {
-//        MapFragment fragment = new MapFragment();
+//    public static AutoMapFragment newInstance(String param1, String param2) {
+//        AutoMapFragment fragment = new AutoMapFragment();
 //        Bundle args = new Bundle();
 //        args.putString(ARG_PARAM1, param1);
 //        args.putString(ARG_PARAM2, param2);
@@ -110,22 +121,18 @@ public class MapFragment extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
+    private void initMap() {
+        if (googleMap == null) {
+            SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
+                    .findFragmentById(R.id.googlemap);
+            mapFragment.getMapAsync(this);
+        }
+    }
+
     /**
      * function to load map. If map is not created it will create it for you
      * */
-    private void initMap() {
-        if (googleMap == null) {
-            googleMap = ((com.google.android.gms.maps.MapFragment) getFragmentManager().findFragmentById(
-                    R.id.googlemap)).getMap();
-
-            // check if map is created successfully or not
-            if (googleMap == null) {
-                Toast.makeText(getActivity().getApplicationContext(),
-                        "Unable to create maps", Toast.LENGTH_SHORT)
-                        .show();
-            }
-        }
-
+    private void setupMap() {
         Location locationCt;
         LocationManager locationManagerCt = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 
@@ -163,13 +170,66 @@ public class MapFragment extends Fragment {
 
             @Override
             public void onMapClick(LatLng arg0) {
-                MapFragment.this.onMapClick();
+                AutoMapFragment.this.onMapClick();
             }
         });
+
+        updateMap();
+    }
+
+    @Override
+    public void onMapReady(GoogleMap map) {
+        googleMap = map;
+
+        setupMap();
     }
 
     public void onMapClick() {
         Utils.StartNewActivity(getActivity(), "com.google.android.apps.maps");
+    }
+
+    private void loadDayTheme() {
+        MapStyleOptions style = MapStyleOptions.loadRawResourceStyle(getActivity(), R.raw.mapstyle_day);
+        googleMap.setMapStyle(style);
+    }
+
+    private void loadNightTheme() {
+        MapStyleOptions style = MapStyleOptions.loadRawResourceStyle(getActivity(), R.raw.mapstyle_night);
+        googleMap.setMapStyle(style);
+    }
+
+    private void updateMap() {
+        Date date = new Date();
+        TimeZone tz = TimeZone.getTimeZone("America/New_York");
+        Calendar now = GregorianCalendar.getInstance(tz);
+        now.setTime(date);
+
+        int hour = (now.get(Calendar.HOUR_OF_DAY));
+
+        if (hour < 7 || hour > 18) {
+            loadNightTheme();
+        }
+        else {
+            loadDayTheme();
+        }
+
+        initNextMapUpdate();
+    }
+
+    private long getMSUntilNextClockTick() {
+        long currentMS = System.currentTimeMillis();
+
+        return (60 - ((currentMS / 60000) % 60)) * 60000;
+    }
+
+    private void initNextMapUpdate() {
+        new android.os.Handler().postDelayed(
+                new Runnable() {
+                    public void run() {
+                        updateMap();
+                    }
+                },
+                getMSUntilNextClockTick());
     }
 
 
