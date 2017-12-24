@@ -9,13 +9,11 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.Toast;
 
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
@@ -48,24 +46,6 @@ public class AutoMapFragment extends android.support.v4.app.Fragment implements 
         // Required empty public constructor
     }
 
-//    /**
-//     * Use this factory method to create a new instance of
-//     * this fragment using the provided parameters.
-//     *
-//     * @param param1 Parameter 1.
-//     * @param param2 Parameter 2.
-//     * @return A new instance of fragment AutoMapFragment.
-//     */
-//    // TODO: Rename and change types and number of parameters
-//    public static AutoMapFragment newInstance(String param1, String param2) {
-//        AutoMapFragment fragment = new AutoMapFragment();
-//        Bundle args = new Bundle();
-//        args.putString(ARG_PARAM1, param1);
-//        args.putString(ARG_PARAM2, param2);
-//        fragment.setArguments(args);
-//        return fragment;
-//    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,13 +61,6 @@ public class AutoMapFragment extends android.support.v4.app.Fragment implements 
 
         return view;
     }
-//
-//    // TODO: Rename method, update argument and hook method into UI event
-//    public void onButtonPressed(Uri uri) {
-//        if (mListener != null) {
-//            mListener.onFragmentInteraction(uri);
-//        }
-//    }
 
     @Override
     public void onAttach(Context context) {
@@ -189,13 +162,17 @@ public class AutoMapFragment extends android.support.v4.app.Fragment implements 
     }
 
     private void loadDayTheme() {
-        MapStyleOptions style = MapStyleOptions.loadRawResourceStyle(getActivity(), R.raw.mapstyle_day);
-        googleMap.setMapStyle(style);
+        if (getActivity() != null) {
+            MapStyleOptions style = MapStyleOptions.loadRawResourceStyle(getActivity(), R.raw.mapstyle_day);
+            googleMap.setMapStyle(style);
+        }
     }
 
     private void loadNightTheme() {
-        MapStyleOptions style = MapStyleOptions.loadRawResourceStyle(getActivity(), R.raw.mapstyle_night);
-        googleMap.setMapStyle(style);
+        if (getActivity() != null) {
+            MapStyleOptions style = MapStyleOptions.loadRawResourceStyle(getActivity(), R.raw.mapstyle_night);
+            googleMap.setMapStyle(style);
+        }
     }
 
     private void updateMap() {
