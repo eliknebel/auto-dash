@@ -1,23 +1,37 @@
 package com.bitbldr.eli.autodash;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -40,6 +54,19 @@ public class AutoMapFragment extends android.support.v4.app.Fragment implements 
     // Google Map
     private GoogleMap googleMap;
 
+    private FusedLocationProviderClient mFusedLocationClient;
+    private LocationCallback mLocationCallback = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            for (Location location : locationResult.getLocations()) {
+                // Update UI with location data
+                updateMapLocation(location);
+            }
+        };
+    };
+
+    private LocationRequest mLocationRequest = new LocationRequest();
+
     View view;
 
     public AutoMapFragment() {
@@ -49,6 +76,8 @@ public class AutoMapFragment extends android.support.v4.app.Fragment implements 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
     }
 
     @Override
@@ -58,6 +87,8 @@ public class AutoMapFragment extends android.support.v4.app.Fragment implements 
         view = inflater.inflate(R.layout.fragment_map, container, false);
 
         initMap();
+
+        startLocationUpdates();
 
         return view;
     }
@@ -77,6 +108,39 @@ public class AutoMapFragment extends android.support.v4.app.Fragment implements 
     public void onDetach() {
         super.onDetach();
         mListener = null;
+
+        stopLocationUpdates();
+    }
+
+    public boolean hasCoarseLocationPermission() {
+        return ContextCompat.checkSelfPermission(
+                getActivity(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    public boolean hasFineLocationPermission() {
+        return ContextCompat.checkSelfPermission(
+                getActivity(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void startLocationUpdates() {
+        if (hasFineLocationPermission()) {
+            try {
+                mFusedLocationClient.requestLocationUpdates(mLocationRequest,
+                        mLocationCallback,
+                        null /* Looper */);
+            }
+            catch (SecurityException e) {
+                Log.e("AUTO_MAP", e.toString());
+            }
+        }
+    }
+
+    private void stopLocationUpdates() {
+        mFusedLocationClient.removeLocationUpdates(mLocationCallback);
     }
 
     /**
@@ -94,7 +158,7 @@ public class AutoMapFragment extends android.support.v4.app.Fragment implements 
         void onFragmentInteraction(Uri uri);
     }
 
-    private void initMap() {
+    public void initMap() {
         if (googleMap == null) {
             SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                     .findFragmentById(R.id.googlemap);
@@ -105,40 +169,50 @@ public class AutoMapFragment extends android.support.v4.app.Fragment implements 
     /**
      * function to load map. If map is not created it will create it for you
      * */
-    private void setupMap() {
-        Location locationCt;
-        LocationManager locationManagerCt = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+    public void setupMap() {
+        if (hasCoarseLocationPermission()) {
+            try {
+                mFusedLocationClient.getLastLocation()
+                    .addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
+                        @Override
+                        public void onSuccess(Location location) {
+                            // Got last known location. In some rare situations this can be null.
+                            if (location != null) {
+                                // Logic to handle location object
 
-        try {
-            locationCt = locationManagerCt
-                    .getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                                LatLng latLng = new LatLng(location.getLatitude(),
+                                        location.getLongitude());
+                                googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 
-            LatLng latLng = new LatLng(locationCt.getLatitude(),
-                    locationCt.getLongitude());
-            googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-//        googleMap.addMarker(new MarkerOptions().position(latLng)
-//                .title("My Spot").snippet("This is my spot!")
-//                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_car)));
+                                //                        googleMap.addMarker(new MarkerOptions().position(latLng)
+                                //                                .title("My Spot").snippet("This is my spot!")
+                                //                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_car)));
 
-            googleMap.setMyLocationEnabled(true);
+                                if (hasFineLocationPermission()) {
+                                    try {
+                                        googleMap.setMyLocationEnabled(true);
+                                    } catch (SecurityException e) {
+                                        Log.e("AUTO_MAP", e.toString());
+                                    }
+                                }
 
-            googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                                googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
 
-            // Zoom in the Google Map
-            googleMap.animateCamera(CameraUpdateFactory.zoomTo(18));
-
+                                // Zoom in the Google Map
+                                googleMap.animateCamera(CameraUpdateFactory.zoomTo(18));
+                            }
+                        }
+                });
+            }
+            catch (SecurityException e) {
+                Log.e("AUTO_MAP", e.toString());
+            }
         }
-        catch(SecurityException e) {
-            Toast.makeText(getActivity().getApplicationContext(),
-                    "Unable to get location (No Permission)", Toast.LENGTH_SHORT)
-                    .show();
-        }
-        catch(Exception e) {
-            Toast.makeText(getActivity().getApplicationContext(),
-                    "Unable to get location", Toast.LENGTH_SHORT)
-                    .show();
-        }
 
+        // disable scroll gestures
+        googleMap.getUiSettings().setScrollGesturesEnabled(false);
+
+        // setup click handler
         googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
 
             @Override
@@ -158,7 +232,15 @@ public class AutoMapFragment extends android.support.v4.app.Fragment implements 
     }
 
     public void onMapClick() {
-        Utils.StartNewActivity(getActivity(), "com.google.android.apps.maps");
+//        if (openMapsInDrivingMode) {
+            Intent intent = getActivity().getPackageManager().getLaunchIntentForPackage("com.google.android.apps.maps");
+            intent.setAction(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse("google.navigation:/?free=1&mode=d&entry=fnls"));
+            startActivity(intent);
+//        }
+//        else {
+//            Utils.StartNewActivity(getActivity(), "com.google.android.apps.maps");
+//        }
     }
 
     private void loadDayTheme() {
@@ -191,6 +273,12 @@ public class AutoMapFragment extends android.support.v4.app.Fragment implements 
         }
 
         initNextMapUpdate();
+    }
+
+    private void updateMapLocation(Location location) {
+        Log.d("AUTO_MAP", "updateMapLocation()");
+        googleMap.animateCamera(CameraUpdateFactory.newLatLng(new LatLng(location.getLatitude(),
+                location.getLongitude())));
     }
 
     private long getMSUntilNextClockTick() {

@@ -3,7 +3,7 @@
     android:id="@+id/constraintLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.bitbldr.eli.autodash.VehicleInfoFragment">
+    tools:context="com.bitbldr.eli.autodash.VehicleFragment">
 
     <!-- TODO: Update blank fragment layout -->
 

@@ -57,6 +57,10 @@ public class StatusBarFragment extends Fragment {
         updateClock();
         updateWeather((TextView) view.findViewById(R.id.weatherButton));
 
+        // initialize icons for iconics buttons
+        IconicsButton muteButton = view.findViewById(R.id.muteButton);
+        muteButton.setText("{faw-volume-off}\nMUTE");
+
         return view;
     }
 
@@ -253,12 +257,8 @@ public class StatusBarFragment extends Fragment {
     }
 
     public void MuteAudio(){
-        AudioManager mAlramMAnager = (AudioManager) getActivity().getSystemService(getActivity().AUDIO_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            mAlramMAnager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE, 0);
-        } else {
-            mAlramMAnager.setStreamMute(AudioManager.STREAM_MUSIC, true);
-        }
+        AudioManager mAudioManager = (AudioManager) getActivity().getSystemService(getActivity().AUDIO_SERVICE);
+        mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE, 0);
     }
 
     public void UnMuteAudio(){

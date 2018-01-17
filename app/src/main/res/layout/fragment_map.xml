@@ -11,6 +11,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        tools:context="com.bitbldr.eli.autodash.HomeActivity" />
+        tools:context="com.bitbldr.eli.autodash.MainActivity" />
 
 </FrameLayout>

@@ -7,12 +7,14 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -26,12 +28,14 @@ import android.widget.Toast;
 
 import com.mikepenz.fontawesome_typeface_library.FontAwesome;
 import com.mikepenz.iconics.IconicsDrawable;
+import com.mikepenz.iconics.view.IconicsButton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -66,7 +70,6 @@ public class MediaBarFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
@@ -77,6 +80,10 @@ public class MediaBarFragment extends Fragment {
 
         // initialize fragment event listeners view
         bindEventHandlers(view);
+
+        // initialize icons for iconics buttons
+        IconicsButton mediaPlayPauseButton = view.findViewById(R.id.mediaPlayPauseButton);
+        mediaPlayPauseButton.setText("{faw-play}");
 
         return view;
     }
@@ -178,18 +185,66 @@ public class MediaBarFragment extends Fragment {
         });
     }
 
+    public void nextSong() {
+        int keyCode = KeyEvent.KEYCODE_MEDIA_NEXT;
+
+        Intent intent = new Intent(Intent.ACTION_MEDIA_BUTTON);
+        intent.setPackage("com.spotify.music");
+        synchronized (this) {
+            intent.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_DOWN, keyCode));
+            getContext().sendOrderedBroadcast(intent, null);
+
+            intent.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_UP, keyCode));
+            getContext().sendOrderedBroadcast(intent, null);
+        }
+    }
+
+    public void previousSong() {
+        int keyCode = KeyEvent.KEYCODE_MEDIA_PREVIOUS;
+
+        Intent intent = new Intent(Intent.ACTION_MEDIA_BUTTON);
+        intent.setPackage("com.spotify.music");
+        synchronized (this) {
+            intent.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_DOWN, keyCode));
+            getContext().sendOrderedBroadcast(intent, null);
+
+            intent.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_UP, keyCode));
+            getContext().sendOrderedBroadcast(intent, null);
+        }
+    }
+
+    public void playPauseMusic() {
+        int keyCode = KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE;
+
+        Intent i = new Intent(Intent.ACTION_MEDIA_BUTTON);
+        i.setPackage("com.spotify.music");
+        synchronized (this) {
+            i.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_DOWN, keyCode));
+            getContext().sendOrderedBroadcast(i, null);
+
+            i.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_UP, keyCode));
+            getContext().sendOrderedBroadcast(i, null);
+        }
+    }
+
     /**
      * Handle media play/pause button click
      * @param v
      */
     public void onMediaPlayPauseClick(View v) {
-        Intent i = new Intent(Intent.ACTION_MEDIA_BUTTON);
-        i.putExtra(Intent.EXTRA_KEY_EVENT,new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE));
-        getActivity().sendOrderedBroadcast(i, null);
+//        Intent i = new Intent(Intent.ACTION_MEDIA_BUTTON);
+//        i.putExtra(Intent.EXTRA_KEY_EVENT,new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE));
+//        getActivity().sendOrderedBroadcast(i, null);
+//
+//        i = new Intent(Intent.ACTION_MEDIA_BUTTON);
+//        i.putExtra(Intent.EXTRA_KEY_EVENT,new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE));
+//        getActivity().sendOrderedBroadcast(i, null);
 
-        i = new Intent(Intent.ACTION_MEDIA_BUTTON);
-        i.putExtra(Intent.EXTRA_KEY_EVENT,new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE));
-        getActivity().sendOrderedBroadcast(i, null);
+//        Intent i = new Intent("com.spotify.mobile.android.ui.widget.PLAY");
+//        i.setPackage("com.spotify.music");
+//        getActivity().sendBroadcast(i);
+
+        playPauseMusic();
     }
 
     /**
@@ -197,13 +252,19 @@ public class MediaBarFragment extends Fragment {
      * @param v
      */
     public void onMediaPreviousClick(View v) {
-        Intent i = new Intent(Intent.ACTION_MEDIA_BUTTON);
-        i.putExtra(Intent.EXTRA_KEY_EVENT,new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PREVIOUS));
-        getActivity().sendOrderedBroadcast(i, null);
+//        Intent i = new Intent(Intent.ACTION_MEDIA_BUTTON);
+//        i.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PREVIOUS));
+//        getActivity().sendOrderedBroadcast(i, null);
+//
+//        i = new Intent(Intent.ACTION_MEDIA_BUTTON);
+//        i.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PREVIOUS));
+//        getActivity().sendOrderedBroadcast(i, null);
+//
+//        Intent i = new Intent("com.spotify.mobile.android.ui.widget.PREVIOUS");
+//        i.setPackage("com.spotify.music");
+//        getActivity().sendBroadcast(i);
 
-        i = new Intent(Intent.ACTION_MEDIA_BUTTON);
-        i.putExtra(Intent.EXTRA_KEY_EVENT,new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PREVIOUS));
-        getActivity().sendOrderedBroadcast(i, null);
+        previousSong();
     }
 
     /**
@@ -211,13 +272,19 @@ public class MediaBarFragment extends Fragment {
      * @param v
      */
     public void onMediaNextClick(View v) {
-        Intent i = new Intent(Intent.ACTION_MEDIA_BUTTON);
-        i.putExtra(Intent.EXTRA_KEY_EVENT,new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_NEXT));
-        getActivity().sendOrderedBroadcast(i, null);
+//        Intent i = new Intent(Intent.ACTION_MEDIA_BUTTON);
+//        i.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_NEXT));
+//        getActivity().sendOrderedBroadcast(i, null);
+//
+//        i = new Intent(Intent.ACTION_MEDIA_BUTTON);
+//        i.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_NEXT));
+//        getActivity().sendOrderedBroadcast(i, null);
+//
+//        Intent i = new Intent("com.spotify.mobile.android.ui.widget.NEXT");
+//        i.setPackage("com.spotify.music");
+//        getActivity().sendBroadcast(i);
 
-        i = new Intent(Intent.ACTION_MEDIA_BUTTON);
-        i.putExtra(Intent.EXTRA_KEY_EVENT,new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_NEXT));
-        getActivity().sendOrderedBroadcast(i, null);
+        nextSong();
     }
 
     /**
@@ -424,10 +491,14 @@ public class MediaBarFragment extends Fragment {
      */
     public class MediaChangeReciever extends BroadcastReceiver {
         public final class BroadcastTypes {
+            static final String DEFAULT_PACKAGE = "com.android.music";
             static final String SPOTIFY_PACKAGE = "com.spotify.music";
             static final String PLAYBACK_STATE_CHANGED = SPOTIFY_PACKAGE + ".playbackstatechanged";
             static final String QUEUE_CHANGED = SPOTIFY_PACKAGE + ".queuechanged";
             static final String METADATA_CHANGED = SPOTIFY_PACKAGE + ".metadatachanged";
+            static final String DEFAULT_PLAYBACK_STATE_CHANGED = DEFAULT_PACKAGE + ".playbackstatechanged";
+            static final String DEFAULT_QUEUE_CHANGED = DEFAULT_PACKAGE + ".queuechanged";
+            static final String DEFAULT_METADATA_CHANGED = DEFAULT_PACKAGE + ".metachanged";
         }
 
         @Override
@@ -439,13 +510,24 @@ public class MediaBarFragment extends Fragment {
 
             String action = intent.getAction();
 
+//            Log.d("MEDIA_BAR", "intent.toString()" + intent.toString());
+//            Log.d("MEDIA_BAR", "action" + action);
+//            Log.d("MEDIA_BAR", "BroadcastTypes.DEFAULT_METADATA_CHANGED" + BroadcastTypes.DEFAULT_METADATA_CHANGED);
+//            Log.d("MEDIA_BAR", "action.equals(BroadcastTypes.DEFAULT_METADATA_CHANGED): " + action.equals(BroadcastTypes.DEFAULT_METADATA_CHANGED));
+
             if (action.equals(BroadcastTypes.METADATA_CHANGED)) {
+//                    || action.equals(BroadcastTypes.DEFAULT_METADATA_CHANGED)) {
                 String trackId = intent.getStringExtra("id");
                 String artistName = intent.getStringExtra("artist");
                 String albumName = intent.getStringExtra("album");
                 String trackName = intent.getStringExtra("track");
                 int trackLengthInSec = intent.getIntExtra("length", 0);
                 // Do something with extracted information...
+
+
+                Log.d("MEDIA_BAR", "intent.getExtras().toString(): " + intent.getExtras().toString());
+
+
 
                 TextView mediaSongTextView = getView().findViewById(R.id.mediaTrackTextView);
                 TextView mediaArtistTextView = getView().findViewById(R.id.mediaArtistTextView);
@@ -461,6 +543,7 @@ public class MediaBarFragment extends Fragment {
                 fetchAlbumArtwork(artistName, albumName);
 
             } else if (action.equals(BroadcastTypes.PLAYBACK_STATE_CHANGED)) {
+//                    || action.equals(BroadcastTypes.DEFAULT_PLAYBACK_STATE_CHANGED)) {
                 final boolean playing = intent.getBooleanExtra("playing", false);
                 int positionInMs = intent.getIntExtra("playbackPosition", 0);
                 // Do something with extracted information
@@ -490,6 +573,7 @@ public class MediaBarFragment extends Fragment {
                         + ":" + Utils.DoubleDigitFormat(String.format("%d", ((currentTrackLength / 1000) % 60))));
 
             } else if (action.equals(BroadcastTypes.QUEUE_CHANGED)) {
+//                    || action.equals(BroadcastTypes.DEFAULT_QUEUE_CHANGED)) {
                 // Sent only as a notification, your app may want to respond accordingly.
             }
         }

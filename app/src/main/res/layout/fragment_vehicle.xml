@@ -32,7 +32,7 @@
             app:layout_constraintHorizontal_bias="0.45"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView" />
+            app:layout_constraintTop_toBottomOf="@+id/vehicleDetailsTextView" />
 
         <include
             android:id="@+id/include"
@@ -57,11 +57,10 @@
             app:layout_constraintTop_toBottomOf="@+id/include" />
 
         <TextView
-            android:id="@+id/textView"
+            android:id="@+id/vehicleDetailsTextView"
             android:layout_width="301dp"
             android:layout_height="21dp"
             android:layout_marginTop="6dp"
-            android:text="2016 Jeep Wrangler 75th Anniversary Edition"
             android:textAlignment="center"
             android:textColor="#fff"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -76,6 +75,49 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/imageView" />
+
+        <Button
+            android:id="@+id/wifiButton"
+            android:layout_width="40dp"
+            android:layout_height="72dp"
+            android:background="@android:color/transparent"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp"
+            android:layout_marginLeft="16dp"
+            android:text="{faw-wifi}"
+            android:textColor="#555555"
+            android:textSize="24sp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/bluetoothButton"
+            android:layout_width="40dp"
+            android:layout_height="72dp"
+            android:background="@android:color/transparent"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp"
+            android:text="{faw-bluetooth}"
+            android:textColor="#555555"
+            android:textSize="24sp"
+            app:layout_constraintStart_toEndOf="@+id/wifiButton"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/prefsButton"
+            android:layout_width="40dp"
+            android:layout_height="72dp"
+            android:layout_marginEnd="20dp"
+            android:background="@android:color/transparent"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp"
+            android:text="{faw-cog}"
+            android:textAlignment="textEnd"
+            android:textColor="#ffffff"
+            android:textSize="24sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
 
     </android.support.constraint.ConstraintLayout>
 </FrameLayout>

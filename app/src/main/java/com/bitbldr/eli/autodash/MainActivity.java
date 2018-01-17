@@ -8,9 +8,6 @@ import android.content.Context;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.net.wifi.ScanResult;
-import android.net.wifi.WifiConfiguration;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
@@ -21,15 +18,13 @@ import android.content.Intent;
 import android.view.WindowManager;
 import android.widget.Toast;
 import com.mikepenz.iconics.context.IconicsContextWrapper;
-import com.mikepenz.iconics.view.IconicsButton;
-import java.util.ArrayList;
-import java.util.List;
 
-public class HomeActivity extends FragmentActivity implements
+public class MainActivity extends FragmentActivity implements
         MediaBarFragment.OnFragmentInteractionListener,
         AutoMapFragment.OnFragmentInteractionListener,
         StatusBarFragment.OnFragmentInteractionListener,
-        VehicleFragment.OnFragmentInteractionListener {
+        VehicleFragment.OnFragmentInteractionListener,
+        NetworkManager.NetworkConsumer {
 
     // Application views
     View welcomeView;
@@ -38,16 +33,7 @@ public class HomeActivity extends FragmentActivity implements
     // Boot logo duration = 2s
     private static final int BOOT_LOGO_DURATION_MS = 2000;
 
-    WifiManager wifiManager;
-    WifiConnectionReceiver wifiConnectionReceiver;
-    WifiScanReceiver wifiScanReceiver;
-    int selectedNetwork;
-
-    String primaryWifiSSID = "my wifi";
-    String primaryWifiPassphrase = "passphrase";
-
-    String mobileWifiSSID = "my wifi";
-    String mobileWifiPassphrase = "passphrase";
+    private NetworkManager networkManager;
 
     private boolean isColdStart = true;
 
@@ -55,12 +41,15 @@ public class HomeActivity extends FragmentActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        inflateAllViews();
+//        inflateAllViews();
         showWelcomeView();
 
         this.checkPermissions();
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+
+        networkManager = new NetworkManager(this);
     }
 
     @Override
@@ -83,9 +72,12 @@ public class HomeActivity extends FragmentActivity implements
             if(grantResults.length == 1
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // We can now safely use the API we requested access to
-
+                initMap();
             } else {
                 // Permission was denied or request was cancelled
+                Log.i("INFO", "Location services will not work without proper permissions");
+                Toast.makeText(this, "Location services will not work without proper permissions",
+                        Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -95,76 +87,59 @@ public class HomeActivity extends FragmentActivity implements
         // handle fragment interactions
     }
 
-    class WifiScanReceiver extends BroadcastReceiver
-    {
-        public void onReceive(Context c, Intent intent)
-        {
+    public void onToggleWifi() {
+        networkManager.start();
+    }
 
-            ArrayList<String> connections = new ArrayList<>();
-            ArrayList<Float> signalStrength = new ArrayList<>();
+    @Override
+    public void onConnectionStatusChanged(NetworkManager.NetworkStatus status) {
+        VehicleFragment vehicleFragment = (VehicleFragment) getSupportFragmentManager().findFragmentById(R.id.vehicle);
 
-            List<ScanResult> wifiList;
-            wifiList = wifiManager.getScanResults();
-            for(int i = 0; i < wifiList.size(); i++)
-            {
-                connections.add(wifiList.get(i).SSID);
+        if (status == NetworkManager.NetworkStatus.CONNECTED) {
+            // network is available, reinitialize network dependant services
+            initNetworkDepServices();
+
+            if (vehicleFragment != null) {
+                vehicleFragment.setWifiIndicator(true);
+            }
+        }
+        else {
+            if (vehicleFragment != null) {
+                vehicleFragment.setWifiIndicator(false);
             }
         }
     }
 
-    class WifiConnectionReceiver extends BroadcastReceiver
-    {
-        public void onReceive(Context c, Intent intent)
-        {
-            Toast.makeText(getApplicationContext(), wifiManager.getWifiState(), Toast.LENGTH_SHORT).show();
+    private void initNetworkDepServices() {
+        initMap();
+    }
+
+    private void initMap() {
+        AutoMapFragment autoMapFragment = (AutoMapFragment) getSupportFragmentManager().findFragmentById(R.id.autoMap);
+
+        if (autoMapFragment != null) {
+            autoMapFragment.setupMap();
         }
     }
 
-    public class PowerConnectedReciever extends BroadcastReceiver {
+    public class PowerConnectedReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-//            wifiManager.setWifiEnabled(true);
-//            connectToWifiNetwork(primaryWifiSSID, primaryWifiPassphrase);
-
             // open this app on power connect
-            startActivity(new Intent(context, HomeActivity.class));
+            startActivity(new Intent(context, MainActivity.class));
         }
 
     }
 
-    public class PowerDisconnectedReciever extends BroadcastReceiver {
+    public class PowerDisconnectedReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            wifiManager.disableNetwork(selectedNetwork);
-            wifiManager.removeNetwork(selectedNetwork);
-            wifiManager.disconnect();
-            wifiManager.setWifiEnabled(false);
-
             isColdStart = true;
 
+            networkManager.disconnect();
             turnScreenOff(context);
         }
 
-    }
-
-    public void initWifi() {
-        wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-
-//        wifiScanReceiver = new WifiScanReceiver();
-//        registerReceiver(wifiScanReceiver, new IntentFilter(
-//                WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-
-        wifiConnectionReceiver = new WifiConnectionReceiver();
-        registerReceiver(wifiScanReceiver, new IntentFilter(
-                WifiManager.NETWORK_STATE_CHANGED_ACTION));
-
-        if(wifiManager.isWifiEnabled()==false)
-        {
-            wifiManager.setWifiEnabled(true);
-        }
-
-//        scanForWifiNetworks();
-        connectToWifiNetwork(primaryWifiSSID, primaryWifiPassphrase);
     }
 
     public void setFullscreenMode() {
@@ -177,33 +152,36 @@ public class HomeActivity extends FragmentActivity implements
                         | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         );
     }
+//
+//    public void inflateAllViews() {
+//        if (welcomeView == null) {
+//            welcomeView = getLayoutInflater().inflate(R.layout.welcome, null);
+//        }
+//
+//        if (mainView == null) {
+//            mainView = getLayoutInflater().inflate(R.layout.activity_main, null);
+//        }
+//    }
 
-    public void inflateAllViews() {
+    public void showWelcomeView() {
         if (welcomeView == null) {
             welcomeView = getLayoutInflater().inflate(R.layout.welcome, null);
         }
 
-        if (mainView == null) {
-            mainView = getLayoutInflater().inflate(R.layout.activity_home, null);
-        }
-    }
-
-    public void showWelcomeView() {
         setContentView(welcomeView);
     }
 
     public void showMainView() {
+        if (mainView == null) {
+            mainView = getLayoutInflater().inflate(R.layout.activity_main, null);
+        }
+
         setContentView(mainView);
 
         setFullscreenMode();
 
-        initWifi();
-
-        IconicsButton muteButton = findViewById(R.id.muteButton);
-        muteButton.setText("{faw-volume-off}\nMUTE");
-
-        registerReceiver(new PowerConnectedReciever(), new IntentFilter(Intent.ACTION_POWER_CONNECTED));
-        registerReceiver(new PowerDisconnectedReciever(), new IntentFilter(Intent.ACTION_POWER_DISCONNECTED));
+        registerReceiver(new PowerConnectedReceiver(), new IntentFilter(Intent.ACTION_POWER_CONNECTED));
+        registerReceiver(new PowerDisconnectedReceiver(), new IntentFilter(Intent.ACTION_POWER_DISCONNECTED));
     }
 
     @Override
@@ -211,25 +189,24 @@ public class HomeActivity extends FragmentActivity implements
         super.onResume();
 
         if (isColdStart) {
-            inflateAllViews();
             showWelcomeView();
 
             new Handler().postDelayed(
                     new Runnable() {
                         public void run() {
-                            showMainView();
                             isColdStart = false;
+
+                            showMainView();
                         }
                     },
                     BOOT_LOGO_DURATION_MS
             );
         }
         else {
-            inflateAllViews();
             showMainView();
         }
-//        inflateAllViews();        // for debugging
-//        showMainView();
+
+        networkManager.start();
 
         setFullscreenMode();
     }
@@ -237,51 +214,9 @@ public class HomeActivity extends FragmentActivity implements
     @Override
     public void onPause() {
         super.onPause();
-        // to stop the listener and save battery
 
-//        unregisterReceiver(wifiScanReceiver);
-    }
-
-    public void scanForWifiNetworks() {
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run()
-            {
-                wifiManager.startScan();
-                scanForWifiNetworks();
-            }
-        }, 1000);
-    }
-
-    public void connectToWifiNetwork(String networkSSID, String networkPass) {
-        WifiConfiguration conf = new WifiConfiguration();
-        conf.SSID = "\"" + networkSSID + "\"";
-
-//        // WEP Network
-//        conf.wepKeys[0] = "\"" + networkPass + "\"";
-//        conf.wepTxKeyIndex = 0;
-//        conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-//        conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
-
-        // WPA Network
-        conf.preSharedKey = "\""+ networkPass +"\"";
-
-//      // Open Network
-//        conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-
-        wifiManager.addNetwork(conf);
-
-        List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();
-        for( WifiConfiguration i : list ) {
-            if(i.SSID != null && i.SSID.equals("\"" + networkSSID + "\"")) {
-                selectedNetwork = i.networkId;
-                wifiManager.disconnect();
-                wifiManager.enableNetwork(selectedNetwork, true);
-                wifiManager.reconnect();
-
-                break;
-            }
-        }
+        // stop the listeners and services to save battery
+        networkManager.stop();
     }
 
     /**

@@ -1,16 +1,23 @@
 package com.bitbldr.eli.autodash;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
+import android.preference.Preference;
+import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.hardware.SensorEvent;
+import android.widget.Button;
 import android.widget.TextView;
 
 /**
@@ -19,7 +26,7 @@ import android.widget.TextView;
  * {@link VehicleFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
  */
-public class VehicleFragment extends Fragment implements SensorEventListener {
+public class VehicleFragment extends Fragment implements SensorEventListener, SharedPreferences.OnSharedPreferenceChangeListener {
     private OnFragmentInteractionListener mListener;
     private View view;
 
@@ -34,6 +41,8 @@ public class VehicleFragment extends Fragment implements SensorEventListener {
 
     private final float[] mRotationMatrix = new float[9];
     private final float[] mOrientationAngles = new float[3];
+
+    private SharedPreferences sharedPref;
 
     public VehicleFragment() {
         // Required empty public constructor
@@ -57,6 +66,10 @@ public class VehicleFragment extends Fragment implements SensorEventListener {
         magneticFieldSensor = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         initSensors();
 
+        bindEventHandlers(view);
+
+        initInfo();
+
         return view;
     }
 
@@ -69,6 +82,11 @@ public class VehicleFragment extends Fragment implements SensorEventListener {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
         }
+
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+
+        // register prefs change listener
+        sharedPref.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -77,6 +95,16 @@ public class VehicleFragment extends Fragment implements SensorEventListener {
         mListener = null;
 
         sensorManager.unregisterListener(this);
+
+        // unregister prefs change listener
+        sharedPref.unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals(AutoSettingsActivity.KEY_PREF_VEHICLE_DETAILS)) {
+            setDescriptionFromPrefs();
+        }
     }
 
     /**
@@ -92,6 +120,68 @@ public class VehicleFragment extends Fragment implements SensorEventListener {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+        void onToggleWifi();
+    }
+
+    private void initInfo() {
+        setDescriptionFromPrefs();
+    }
+
+    private void bindEventHandlers(View view) {
+        view.findViewById(R.id.wifiButton).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v) { onWifiButtonClick(v); }
+        });
+        view.findViewById(R.id.prefsButton).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v) { onPrefsButtonClick(v); }
+        });
+    }
+
+    private void onPrefsButtonClick(View v) {
+        Intent i = new Intent(getActivity(), AutoSettingsActivity.class);
+        startActivity(i);
+    }
+
+    private void onWifiButtonClick(View v) {
+        ((OnFragmentInteractionListener) getActivity()).onToggleWifi();
+    }
+
+    private void setDescriptionFromPrefs() {
+        String vehicleDetails = sharedPref.getString(AutoSettingsActivity.KEY_PREF_VEHICLE_DETAILS, "");
+
+        TextView vehicleDetailsTextView = view.findViewById(R.id.vehicleDetailsTextView);
+        vehicleDetailsTextView.setText(vehicleDetails);
+    }
+
+    public void setWifiIndicator(boolean enabled) {
+        String newColor;
+
+        if (enabled) {
+            newColor = "#ffffff";
+        }
+        else {
+            newColor = "#555555";
+        }
+
+        Button wifiButton = view.findViewById(R.id.wifiButton);
+        wifiButton.setTextColor(Color.parseColor(newColor));
+    }
+
+    public void setBluetoothIndicator(boolean enabled) {
+        String newColor;
+
+        if (enabled) {
+            newColor = "#3498db";
+        }
+        else {
+            newColor = "#555555";
+        }
+
+        TextView bluetoothButton = view.findViewById(R.id.bluetoothButton);
+        bluetoothButton.setTextColor(Color.parseColor(newColor));
     }
 
     public void initSensors() {
