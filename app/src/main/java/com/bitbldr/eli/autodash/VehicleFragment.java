@@ -1,17 +1,21 @@
 package com.bitbldr.eli.autodash;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.preference.Preference;
 import android.preference.PreferenceManager;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +23,15 @@ import android.view.ViewGroup;
 import android.hardware.SensorEvent;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+
+import java.util.Formatter;
+import java.util.Locale;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -44,6 +57,19 @@ public class VehicleFragment extends Fragment implements SensorEventListener, Sh
 
     private SharedPreferences sharedPref;
 
+    private FusedLocationProviderClient mFusedLocationClient;
+    private LocationRequest mLocationRequest = new LocationRequest();
+
+    private LocationCallback mLocationCallback = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            for (Location location : locationResult.getLocations()) {
+                // Update UI with location data
+                onLocationChanged(location);
+            }
+        };
+    };
+
     public VehicleFragment() {
         // Required empty public constructor
     }
@@ -51,6 +77,8 @@ public class VehicleFragment extends Fragment implements SensorEventListener, Sh
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
     }
 
     @Override
@@ -66,11 +94,48 @@ public class VehicleFragment extends Fragment implements SensorEventListener, Sh
         magneticFieldSensor = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         initSensors();
 
+//        if (hasCoarseLocationPermission()) {
+//            try {
+//                // initialize GPS Speed listener
+////                LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+//                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+//                this.updateSpeed(null);
+//            }
+//            catch (SecurityException e) {
+//                Log.e("AUTO_MAP", e.toString());
+//            }
+//        }
+
+        // initialize GPS speed updates
+        startLocationUpdates();
+
         bindEventHandlers(view);
 
         initInfo();
 
         return view;
+    }
+
+    public boolean hasFineLocationPermission() {
+        return ContextCompat.checkSelfPermission(
+                getActivity(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void startLocationUpdates() {
+        if (hasFineLocationPermission()) {
+            try {
+                mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, null);
+            }
+            catch (SecurityException e) {
+                Log.e("AUTO_MAP", e.toString());
+            }
+        }
+    }
+
+    private void stopLocationUpdates() {
+        mFusedLocationClient.removeLocationUpdates(mLocationCallback);
     }
 
     @Override
@@ -98,6 +163,9 @@ public class VehicleFragment extends Fragment implements SensorEventListener, Sh
 
         // unregister prefs change listener
         sharedPref.unregisterOnSharedPreferenceChangeListener(this);
+
+        // unregister location updates
+        stopLocationUpdates();
     }
 
     @Override
@@ -252,4 +320,82 @@ public class VehicleFragment extends Fragment implements SensorEventListener, Sh
         // "mOrientationAngles" now has up-to-date information.
     }
 
+
+    private void updateSpeed(CLocation location) {
+        float nCurrentSpeed = 0;
+
+        if(location != null)
+        {
+            nCurrentSpeed = location.getSpeed();
+        }
+
+        Formatter fmt = new Formatter(new StringBuilder());
+        fmt.format(Locale.US, "%3.0f", nCurrentSpeed);
+        String strCurrentSpeed = fmt.toString();
+
+        if (strCurrentSpeed.equals("")) {
+            strCurrentSpeed = "0";
+        }
+
+        TextView txtCurrentSpeed = view.findViewById(R.id.vehicleSpeed);
+        txtCurrentSpeed.setText(strCurrentSpeed);
+    }
+
+    public void onLocationChanged(Location location) {
+        if(location != null)
+        {
+            CLocation myLocation = new CLocation(location);
+            this.updateSpeed(myLocation);
+        }
+    }
+
+    public class CLocation extends Location {
+
+        public CLocation(Location location) {
+            super(location);
+        }
+
+        @Override
+        public float distanceTo(Location dest) {
+            float nDistance = super.distanceTo(dest);
+
+            //Convert meters to feet
+            nDistance = nDistance * 3.28083989501312f;
+
+            return nDistance;
+        }
+
+        @Override
+        public float getAccuracy() {
+            float nAccuracy = super.getAccuracy();
+
+            //Convert meters to feet
+            nAccuracy = nAccuracy * 3.28083989501312f;
+
+            return nAccuracy;
+        }
+
+        @Override
+        public double getAltitude() {
+            double nAltitude = super.getAltitude();
+
+            //Convert meters to feet
+            nAltitude = nAltitude * 3.28083989501312d;
+
+            return nAltitude;
+        }
+
+        @Override
+        public float getSpeed() {
+            float nSpeed = super.getSpeed() * 3.6f;
+
+            //Convert meters/second to miles/hour
+            nSpeed = nSpeed * 2.2369362920544f/3.6f;
+
+            return nSpeed;
+        }
+
+
+
+    }
 }

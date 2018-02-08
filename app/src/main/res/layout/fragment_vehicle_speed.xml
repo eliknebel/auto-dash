@@ -4,16 +4,14 @@
     android:id="@+id/constraintLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.bitbldr.eli.autodash.VehicleSpeedFragment">
+    tools:context="com.bitbldr.eli.autodash.VehicleFragment">
 
     <!-- TODO: Update blank fragment layout -->
 
     <TextView
-        android:id="@+id/textView6"
+        android:id="@+id/vehicleSpeed"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
         android:text="0"
         android:textAlignment="textEnd"
         android:textColor="#fff"
@@ -27,12 +25,12 @@
         android:id="@+id/textView7"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="34dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="32dp"
         android:text="MPH"
         android:textAllCaps="true"
         android:textColor="#fff"
         android:textSize="32sp"
-        app:layout_constraintStart_toEndOf="@+id/textView6"
-        app:layout_constraintTop_toTopOf="@+id/textView6" />
+        app:layout_constraintStart_toEndOf="@+id/vehicleSpeed"
+        app:layout_constraintTop_toTopOf="@+id/vehicleSpeed" />
 </android.support.constraint.ConstraintLayout>

@@ -136,6 +136,10 @@ public class MainActivity extends FragmentActivity implements
         public void onReceive(Context context, Intent intent) {
             isColdStart = true;
 
+            // pause music
+            MediaBarFragment mediaBarFragment = (MediaBarFragment) getFragmentManager().findFragmentById(R.id.mediabar);
+            mediaBarFragment.pauseMusic();
+
             networkManager.disconnect();
             turnScreenOff(context);
         }
@@ -195,7 +199,6 @@ public class MainActivity extends FragmentActivity implements
                     new Runnable() {
                         public void run() {
                             isColdStart = false;
-
                             showMainView();
                         }
                     },

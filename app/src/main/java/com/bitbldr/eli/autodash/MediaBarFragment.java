@@ -227,6 +227,20 @@ public class MediaBarFragment extends Fragment {
         }
     }
 
+    public void pauseMusic() {
+        int keyCode = KeyEvent.KEYCODE_MEDIA_PAUSE;
+
+        Intent i = new Intent(Intent.ACTION_MEDIA_BUTTON);
+        i.setPackage("com.spotify.music");
+        synchronized (this) {
+            i.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_DOWN, keyCode));
+            getContext().sendOrderedBroadcast(i, null);
+
+            i.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_UP, keyCode));
+            getContext().sendOrderedBroadcast(i, null);
+        }
+    }
+
     /**
      * Handle media play/pause button click
      * @param v
