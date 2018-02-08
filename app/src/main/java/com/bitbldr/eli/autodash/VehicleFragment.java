@@ -94,18 +94,6 @@ public class VehicleFragment extends Fragment implements SensorEventListener, Sh
         magneticFieldSensor = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         initSensors();
 
-//        if (hasCoarseLocationPermission()) {
-//            try {
-//                // initialize GPS Speed listener
-////                LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-//                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-//                this.updateSpeed(null);
-//            }
-//            catch (SecurityException e) {
-//                Log.e("AUTO_MAP", e.toString());
-//            }
-//        }
-
         // initialize GPS speed updates
         startLocationUpdates();
 
