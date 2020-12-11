@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/AutoDash.iml" filepath="$PROJECT_DIR$/.idea/AutoDash.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/auto-dash.iml" filepath="$PROJECT_DIR$/.idea/modules/auto-dash.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/auto-dash.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/auto-dash.app.iml" />
     </modules>
   </component>
 </project>
