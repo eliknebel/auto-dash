@@ -1,6 +1,8 @@
 # AutoDash
 Android based car dashboard app
 
+![Tablet](./screenshots/tablet.png)
+
 ## Tablet Prerequisites
 
 1. Install Android Kernel based on RR and Timur's (Android 7.1.2)
@@ -10,6 +12,3 @@ Android based car dashboard app
   - Set Device Broadcast Status to ON in the Spotify app’s settings
 1. Install AutoDash
 1. Enable AutoDash as Device Admin in Android Preferences
-
-## Required Hardware
-TODO
