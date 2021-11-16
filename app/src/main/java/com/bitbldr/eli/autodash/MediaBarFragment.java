@@ -483,7 +483,7 @@ public class MediaBarFragment extends Fragment {
      */
     public void fetchAlbumArtwork(String artistName, String albumName) {
         try {
-            String LASTFM_API_KEY = "840e46089e774b43fd3ba374e1d9f5c4";
+            String LASTFM_API_KEY = "changeme";
 
             StringBuilder stringBuilder = new StringBuilder("http://ws.audioscrobbler.com/2.0/");
             stringBuilder.append("?method=album.getinfo");
